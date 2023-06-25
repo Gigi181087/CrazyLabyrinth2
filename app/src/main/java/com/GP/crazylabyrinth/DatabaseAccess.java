@@ -55,7 +55,7 @@ public class DatabaseAccess extends SQLiteOpenHelper {
      * Gegebenen Datensatz in die  Tabelle eingeben
      * @param dataset
      * @return ID des neuen Datensatzes oder -1 bei Fehler
-     */
+
     public long datensatzEinfuegen(Dataset dataset) {
         try {
             ContentValues daten = erzeugeDatenObjekt(dataset);
@@ -65,7 +65,7 @@ public class DatabaseAccess extends SQLiteOpenHelper {
             Log.d("CrazyLabyrinth", ex.getMessage());
             return -1;
         }
-    }
+    } */
 
     /**
      * Liefert Cursor zum Zugriff auf alle Eintr?ge, alphabetisch geordnet nach Spalte "Name"

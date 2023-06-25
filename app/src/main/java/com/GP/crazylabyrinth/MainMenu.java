@@ -10,15 +10,16 @@ import android.widget.ImageButton;
 public class MainMenu extends AppCompatActivity {
     private ImageButton _ButtonStartGame;
     private ImageButton _ButtonOpenHighscore;
-    private ImageButton _ButtonQuitApp;
+    ImageButton _ButtonQuitApp;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
+        getSupportActionBar().hide();
 
-        _ButtonStartGame = (ImageButton)findViewById(R.id.buttonStartGame);
+        _ButtonStartGame = findViewById(R.id.buttonStartGame);
         _ButtonStartGame.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -28,7 +29,7 @@ public class MainMenu extends AppCompatActivity {
 
         });
 
-        _ButtonOpenHighscore = (ImageButton)findViewById(R.id.buttonShowHighscore);
+        _ButtonOpenHighscore = findViewById(R.id.buttonShowHighscore);
         _ButtonOpenHighscore.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -38,7 +39,7 @@ public class MainMenu extends AppCompatActivity {
 
         });
 
-        _ButtonQuitApp = (ImageButton)findViewById(R.id.buttonQuitApp);
+        _ButtonQuitApp = findViewById(R.id.buttonQuitApp);
         _ButtonQuitApp.setOnClickListener((new View.OnClickListener() {
 
             @Override
@@ -52,7 +53,7 @@ public class MainMenu extends AppCompatActivity {
     public void openActivity(Object sender) {
 
         if (sender == _ButtonStartGame) {
-            startActivity(new Intent(this, Game.class));
+            startActivity(new Intent(this, GameActivity.class));
 
         } else if(sender == _ButtonOpenHighscore) {
             startActivity(new Intent(this, Highscore.class));
