@@ -1,4 +1,4 @@
-package com.GP.crazylabyrinth;
+package com.GP.database;
 
 import java.sql.Time;
 import java.util.Date;

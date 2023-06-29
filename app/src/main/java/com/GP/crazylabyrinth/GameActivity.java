@@ -16,7 +16,12 @@ import android.os.Vibrator;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
 
-public class GameActivity extends AppCompatActivity implements SensorEventListener, LabyrinthModel.LabyrinthEventListener {
+import com.GP.labyrinth.LabyrinthModel;
+import com.GP.labyrinth.LabyrinthView;
+import com.GP.labyrinth.Ball;
+import com.GP.mqtt.MQTTManager;
+
+public class GameActivity extends AppCompatActivity implements SensorEventListener, LabyrinthModel.LabyrinthEventListener, MQTTManager.MQTTEventListener {
     private Handler fpsHandler = new Handler();
     private Runnable fpsRunnable = new Runnable() {
         @Override
@@ -26,8 +31,16 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
         }
     };
 
+    private enum controls {
+        MQTT,
+        ACCELERATOR
+    }
+
+    private controls usercontrols;
+
     //private final Display display;
     private LabyrinthModel labyrinth;
+    private MQTTManager mqttManager;
     private LabyrinthView labyrinthView;
     private SensorManager _sensorManager;
     private SensorEventListener sensorListener;

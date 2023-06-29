@@ -28,7 +28,7 @@
     </LinearLayout>
 
 
-    <com.GP.crazylabyrinth.LabyrinthView
+    <com.GP.labyrinth.LabyrinthView
         android:id="@+id/labyrinth_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

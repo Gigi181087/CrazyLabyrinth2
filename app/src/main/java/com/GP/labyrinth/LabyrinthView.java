@@ -1,7 +1,4 @@
-package com.GP.crazylabyrinth;
-
-import static android.content.Context.WINDOW_SERVICE;
-import static androidx.core.content.ContextCompat.getSystemService;
+package com.GP.labyrinth;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -12,11 +9,12 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
 import android.view.View;
-import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
+
+import com.GP.crazylabyrinth.R;
+import com.GP.labyrinth.LabyrinthModel;
 
 public class LabyrinthView extends View {
     private Bitmap _labyrinthBitmap;

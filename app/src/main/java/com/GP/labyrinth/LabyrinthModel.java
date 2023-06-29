@@ -1,6 +1,16 @@
-package com.GP.crazylabyrinth;
+package com.GP.labyrinth;
 
 import androidx.annotation.NonNull;
+
+// import coordinates package
+import com.GP.coordinates.Vector2D;
+import com.GP.coordinates.Position2D;
+import com.GP.coordinates.Grid;
+
+// import labyrinth package
+import com.GP.labyrinth.Ball;
+import com.GP.labyrinth.LabyrinthModel;
+import com.GP.labyrinth.LabyrinthView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +26,10 @@ public class LabyrinthModel {
     private List<LabyrinthEventListener> eventListeners;
     public int Height;
     public int Width;
+
+    public float WallSize = 0.05f;
+
+    public float BallSize = 0.25f;
     public Grid Start;
     public Grid End;
     public Grid Key;
@@ -85,156 +99,9 @@ public class LabyrinthModel {
 
     }
 
-    public class Grid {
-        public int X;
-        public int Y;
-
-        public Grid(Grid gridParam) {
-            this.X = gridParam.X;
-            this.Y = gridParam.Y;
-        }
-        public Grid (int xParam, int yParam) {
-            this.X = xParam;
-            this.Y = yParam;
-        }
-
-        public boolean Equals(Grid gridParam) {
-            if(gridParam == null) {
-
-                return false;
-            }
-
-            if((this.X != gridParam.X) ||(this.Y != gridParam.Y)) {
-
-                return false;
-
-            } else {
-
-                return true;
-            }
-        }
-
-        private void Clone(@NonNull Grid gridParam) {
-            this.X = gridParam.X;
-            this.Y = gridParam.Y;
-        }
-    }
-
-    public class Ball {
-        /*
-         * Flag if the ball has the key to open the gate
-         */
-        public boolean HasKey = true;
-
-        /*
-         * Position of the ball
-         */
-        public float XPosition = 0;
-        public float YPosition = 0;
 
 
-        /*
-         * Speed of the ball along the two axis
-         */
-        private float xSpeed = 0;
-        private float ySpeed = 0;
 
-        /*
-         * Force pulling on the ball on both axis
-         */
-        private float _xForce = 0;
-        private float _yForce = 0;
-
-        /*
-         * Time in milliseconds when position was last updated
-         */
-        private long _lastUpdated = System.currentTimeMillis();
-
-
-        /**
-         * Initializes a new ball
-         * @param xPositionParam X-coordinate of the ball
-         * @param yPositionParam Y-coordinate of the ball
-         */
-        public Ball(float xPositionParam, float yPositionParam) {
-            this.XPosition = xPositionParam;
-            this.YPosition = yPositionParam;
-        }
-
-        public void UpdatePosition() {
-            long _timeNow = System.currentTimeMillis();
-            float _timeElapsed = _timeNow - _lastUpdated;
-
-            // calculate new position
-            this.XPosition += (xSpeed * _timeElapsed) / 1000;
-            this.YPosition += (ySpeed * _timeElapsed) / 1000;
-
-            // calculate new speed
-            this.xSpeed += ((this._xForce * _timeElapsed) / 1000) * 0.8;
-            this.ySpeed += ((this._yForce * _timeElapsed) / 1000) * 0.8;
-
-            _lastUpdated = _timeNow;
-
-            HandleCollision();
-        }
-
-        public void UpdatePosition(float xForceParam, float yForceParam) {
-            UpdatePosition();
-
-            // update force values
-            this._xForce = xForceParam;
-            this._yForce = yForceParam;
-        }
-
-        private void HandleCollision() {
-            LabyrinthCell _cell = Cells[(int)this.XPosition][(int)this.YPosition];
-            if(new Grid((int)this.XPosition, (int)this.YPosition).Equals(Key)) {
-                NotifyKeyCollected();
-                this.HasKey = true;
-            } else if(new Grid((int)this.XPosition, (int)this.YPosition).Equals(End) && this.HasKey) {
-                NotifyGameWon();
-            }
-
-
-            // Check left wall
-            if((this.XPosition - (int)this.XPosition) <= 0.29) {
-
-                if(_cell.WayLeft == false) {
-                    NotifyWallTouched(this.xSpeed);
-                    this.xSpeed *= (-0.5);
-                    this.XPosition = (int)this.XPosition + 0.29f;
-                }
-
-            // Check right wall
-            } else if((this.XPosition - (int)this.XPosition) >= 0.71) {
-
-                if(_cell.WayRight == false) {
-                    NotifyWallTouched(this.xSpeed);
-                    this.xSpeed *= (-0.5);
-                    this.XPosition = (int)this.XPosition + 0.71f;
-                }
-            }
-
-            // Check top wall
-            if((this.YPosition - (int)this.YPosition) <= 0.29) {
-
-                if(_cell.WayUp == false) {
-                    NotifyWallTouched(this.ySpeed);
-                    this.ySpeed *= (-0.5);
-                    this.YPosition = (int)this.YPosition + 0.29f;
-                }
-
-                // Check bottom wall
-            } else if((this.YPosition - (int)this.YPosition) >= 0.71) {
-
-                if(_cell.WayDown == false) {
-                    NotifyWallTouched(this.ySpeed);
-                    this.ySpeed *= (-0.5);
-                    this.YPosition = (int)this.YPosition + 0.71f;
-                }
-            }
-        }
-    }
 
     private static class LabyrinthCreator {
         private static boolean[][] visited;
@@ -417,31 +284,109 @@ public class LabyrinthModel {
     }
 
     private static class BallMover {
+
+        // Created by ChatGPT and unchanged
+
+
+
         private static LabyrinthModel labyrinth;
-        private static Grid oldPosition;
+        private static Grid startGrid;
+
+        private static Vector2D movementVector;
         public void UpdateBallPosition(LabyrinthModel labyrinthParam, float xForceParam, float yForceParam) {
             this.labyrinth = labyrinthParam;
 
-            oldPosition = labyrinth.new Grid((int)labyrinth.Ball.XPosition, (int)labyrinth.Ball.YPosition);
+
+            // Create movement vector from accelerator forces
+            startGrid = new Grid((int)labyrinth.Ball.Position.X, (int)labyrinth.Ball.Position.Y);
 
             long _timeNow = System.currentTimeMillis();
-            float _timeElapsed = _timeNow - labyrinth.Ball._lastUpdated;
+            float _timeElapsed = _timeNow - labyrinth.Ball.LastUpdated;
 
             // calculate new position
-            labyrinth.Ball.XPosition += (labyrinth.Ball.xSpeed * _timeElapsed) / 1000;
-            labyrinth.Ball.YPosition += (labyrinth.Ball.ySpeed * _timeElapsed) / 1000;
+            float _newX = (float)(this.labyrinth.Ball.Position.X + (labyrinth.Ball.SpeedX * 0.8 * _timeElapsed) / 1000);
+            float _newY = (float)(this.labyrinth.Ball.Position.Y + (labyrinth.Ball.SpeedY * 0.8 * _timeElapsed) / 1000);
 
             // calculate new speed
-            labyrinth.Ball.xSpeed += ((labyrinth.Ball._xForce * _timeElapsed) / 1000) * 0.8;
-            labyrinth.Ball.ySpeed += ((labyrinth.Ball._yForce * _timeElapsed) / 1000) * 0.8;
+            labyrinth.Ball.SpeedX += ((labyrinth.Ball.ForceX * _timeElapsed) / 1000);
+            labyrinth.Ball.SpeedY += ((labyrinth.Ball.ForceY * _timeElapsed) / 1000);
 
-            labyrinth.Ball._lastUpdated = _timeNow;
+            labyrinth.Ball.LastUpdated = _timeNow;
 
-            this.ResolveCollisions();
+            movementVector = new Vector2D(this.labyrinth.Ball.Position, new Position2D(_newX, _newY));
+
+            /*
+             * Check if vector collides with any wall
+             */
+
+            // Check top wall
+            this.resolveMovement();
         }
 
-        private void ResolveCollisions() {
-            LabyrinthCell _cell = labyrinth.Cells[(int)labyrinth.Ball.XPosition][(int)labyrinth.Ball.YPosition];
+        private void resolveMovement() {
+            this.startGrid = new Grid((int)this.movementVector.StartPosition.X, (int)this.movementVector.StartPosition.Y);
+
+            // Collision
+            if(!this.checkWithinBounds()) {
+                LabyrinthCell _cell = labyrinth.Cells[(int)labyrinth.Ball.Position.X][(int)labyrinth.Ball.Position.X];
+                Vector2D _cornerVector = new Vector2D(this.labyrinth.Ball.XPosition + this.labyrinth.BallSize, this.labyrinth.Ball.YPosition - this.labyrinth.BallSize, this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y + this.labyrinth.WallSize);
+
+                // Check top right corner
+                if(this.movementVector.Angle < this.new Vector2D(this.labyrinth.Ball.XPosition + this.labyrinth.BallSize, this.labyrinth.Ball.YPosition, this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y + this.labyrinth.WallSize).Angle) {
+
+                    // Case that a wall is on the top side
+                    if(!_cell.WayUp) {
+                        this.movementVector.resolveCollision(this.new Vector2D(this.labyrinth.Ball.XPosition, this.startGrid.Y + this.labyrinth.WallSize,this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y + this.labyrinth.WallSize));
+                        this.resolveMovement();
+
+                        return;
+
+                    } else {
+
+                        // Check if ball bounces of the corner
+                        if(this.movementVector.Angle > this.new Vector2D(this.labyrinth.Ball.XPosition + this.labyrinth.BallSize, this.labyrinth.Ball.YPosition, this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y + this.labyrinth.WallSize).Angle) {
+                            this.movementVector.resolveCollision(this.new Vector2D(this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y + this.labyrinth.WallSize,this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y - this.labyrinth.WallSize));
+                            this.resolveMovement();
+
+                        // Move ball to the next cell
+                        } else {
+                            this.moveBallToAxisY(this.startGrid.Y - this.labyrinth.WallSize);
+                            this.resolveMovement();
+                        }
+                    }
+
+                // Check bottom right corner
+                } else if (this.movementVector.Angle < this.new Vector2D(this.labyrinth.Ball.XPosition, this.labyrinth.Ball.YPosition + this.labyrinth.BallSize, this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y + this.labyrinth.WallSize).Angle) {
+
+                    // Case that a wall is on the right side
+                    if(!_cell.WayRight) {
+                        this.movementVector.resolveCollision(this.new Vector2D(this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y + 1 - this.labyrinth.WallSize,this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y + this.labyrinth.WallSize));
+                        this.resolveMovement();
+
+                        return;
+
+                    } else {
+
+                        // Check if ball bounces of the corners
+                        // Top corner
+                        if(this.movementVector.Angle < this.new Vector2D(this.labyrinth.Ball.XPosition + this.labyrinth.BallSize, this.labyrinth.Ball.YPosition, this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y + this.labyrinth.WallSize).Angle) {
+                            this.movementVector.resolveCollision(this.new Vector2D(this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y + this.labyrinth.WallSize, this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y - this.labyrinth.WallSize));
+                            this.resolveMovement();
+
+                        } else if
+                            // Move ball to the next cell
+                        } else {
+                            this.moveBallToAxisY(this.startGrid.Y - this.labyrinth.WallSize);
+                            this.resolveMovement();
+                        }
+                }
+
+            // No collision
+            } else {
+                this.labyrinth.Ball.XPosition = this.movementVector.endX;
+                this.labyrinth.Ball.YPosition = this.movementVector.endY;
+            }
+
             // Flags to check corner
             boolean _cornerLeft = false;
             boolean _cornerTop = false;
@@ -495,6 +440,45 @@ public class LabyrinthModel {
             } else if(labyrinth.new Grid((int)labyrinth.Ball.XPosition, (int)labyrinth.Ball.YPosition).Equals(labyrinth.End) && labyrinth.Ball.HasKey) {
                 labyrinth.NotifyGameWon();
             }
+        }
+
+        private void setPosition() {
+
+
+        }
+
+        /**
+         * Tests if movement vector is inside cell bounds
+         * @return true, if vector is within square bounds completely, otherwise false
+         */
+        private boolean checkWithinBounds() {
+            Grid _grid = this.labyrinth.new Grid((int)this.labyrinth.Ball.XPosition, (int)this.labyrinth.Ball.YPosition);
+
+            if(this.movementVector.endX > _grid.X + 1 - this.labyrinth.WallSize - this.labyrinth.BallSize) {
+
+                return false;
+            }
+
+            if(this.movementVector.endX < _grid.X + this.labyrinth.WallSize + this.labyrinth.BallSize) {
+
+                return false;
+            }
+
+            if(this.movementVector.endY > _grid.Y + 1 - this.labyrinth.WallSize - this.labyrinth.BallSize) {
+
+                return false;
+            }
+
+            if(this.movementVector.endY < _grid.Y + this.labyrinth.WallSize + this.labyrinth.BallSize) {
+
+                return false;
+            }
+
+            return true;
+        }
+
+        private boolean checkWithinCorridor(Vector2D vectorParam, Position LeftParam, Position fightParam, Position backLeftParam, Position backRightParam) {
+
         }
         private boolean IsInCorner() {
             // Überprüfe, ob die Kugel innerhalb des Nähebereichs zur Ecke liegt

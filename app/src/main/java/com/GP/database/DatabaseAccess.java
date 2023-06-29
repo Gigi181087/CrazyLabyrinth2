@@ -1,4 +1,4 @@
-package com.GP.crazylabyrinth;
+package com.GP.database;
 
 import java.util.ArrayList;
 import java.util.Date;
