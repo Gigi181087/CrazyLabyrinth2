@@ -24,4 +24,9 @@ public class Position2D {
 
         return new Vector2D(this, positionParam).Length;
     }
+
+    public Position2D add(float xParam, float yParam) {
+
+        return new Position2D(this.X + xParam, this.Y + yParam);
+    }
 }

@@ -330,19 +330,40 @@ public class LabyrinthModel {
             // Collision
             if(!this.checkWithinBounds()) {
                 LabyrinthCell _cell = labyrinth.Cells[(int)labyrinth.Ball.Position.X][(int)labyrinth.Ball.Position.X];
-                Vector2D _cornerVector = new Vector2D(this.labyrinth.Ball.XPosition + this.labyrinth.BallSize, this.labyrinth.Ball.YPosition - this.labyrinth.BallSize, this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y + this.labyrinth.WallSize);
+
+                // Create position of the ball edges
+                Position2D topEdge = this.labyrinth.Ball.Position.add(0, -this.labyrinth.BallSize);
+                Position2D rightEdge = this.labyrinth.Ball.Position.add(labyrinth.BallSize, 0);
+                Position2D bottomEdge = this.labyrinth.Ball.Position.add(0, labyrinth.BallSize);
+                Position2D leftEdge = this.labyrinth.Ball.Position.add(labyrinth.BallSize, 0);
+
+                // Create position of the corners
+                Position2D topRightCorner = new Position2D((float)startGrid.X, (float)startGrid.Y).add(1 - this.labyrinth.WallSize, this.labyrinth.WallSize);
+                Position2D _bottomRightCorner = new Position2D((float)startGrid.X, (float)startGrid.Y).add(1 - this.labyrinth.WallSize, 1 - this.labyrinth.WallSize);
+                Position2D bottomLeftCorner = new Position2D((float)startGrid.X, (float)startGrid.Y).add(this.labyrinth.WallSize, 1 - this.labyrinth.WallSize);
+                Position2D topLeftCorner = new Position2D((float)startGrid.X, (float)startGrid.Y).add(this.labyrinth.WallSize, this.labyrinth.WallSize);
 
                 // Check top right corner
-                if(this.movementVector.Angle < this.new Vector2D(this.labyrinth.Ball.XPosition + this.labyrinth.BallSize, this.labyrinth.Ball.YPosition, this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y + this.labyrinth.WallSize).Angle) {
+                if(checkVectorBetweenPositions(movementVector, new Position2D(startGrid.X, startGrid.Y).add(0.5f, 0), topRightCorner)) {
 
-                    // Case that a wall is on the top side
-                    if(!_cell.WayUp) {
+
+
+                    if(!_cell.WayUp) {  // Case there is a wall
                         this.movementVector.resolveCollision(this.new Vector2D(this.labyrinth.Ball.XPosition, this.startGrid.Y + this.labyrinth.WallSize,this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y + this.labyrinth.WallSize));
                         this.resolveMovement();
 
                         return;
 
-                    } else {
+                    } else { // Case there is no wall
+
+                        // Check if ball touches the corner
+                        if(checkVectorBetweenPositions(movementVector, new Position2D(startGrid.X, startGrid.Y).add(0.5f, -labyrinth.WallSize), new Position2D(startGrid.X, startGrid.Y).add(1 - labyrinth.WallSize, -labyrinth.WallSize))) {
+                            this.moveBallToAxisY(this.startGrid.Y - this.labyrinth.WallSize);
+                            this.resolveMovement();
+
+                        }
+
+
 
                         // Check if ball bounces of the corner
                         if(this.movementVector.Angle > this.new Vector2D(this.labyrinth.Ball.XPosition + this.labyrinth.BallSize, this.labyrinth.Ball.YPosition, this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y + this.labyrinth.WallSize).Angle) {
@@ -471,6 +492,23 @@ public class LabyrinthModel {
             }
 
             if(this.movementVector.endY < _grid.Y + this.labyrinth.WallSize + this.labyrinth.BallSize) {
+
+                return false;
+            }
+
+            return true;
+        }
+
+        public boolean checkVectorBetweenPositions(Vector2D vectorParam, Position2D firstPositionParam, Position2D secondPositionParam) {
+            Vector2D vectorToFirst = new Vector2D(vectorParam.StartPosition, firstPositionParam);
+            Vector2D vectorToSecond = new Vector2D(vectorParam.StartPosition, secondPositionParam);
+
+            if(vectorParam.Angle < vectorToFirst.Angle) {
+
+                return false;
+            }
+
+            if(vectorParam.Angle > vectorToSecond.Angle) {
 
                 return false;
             }
