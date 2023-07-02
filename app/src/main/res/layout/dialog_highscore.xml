@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".HighscoreActivity">
+
+    <TextView
+        android:id="@+id/header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:text="HIGHSCORES"
+        android:background="@drawable/text_roundededges"
+        android:fontFamily="@font/gamefont"
+        android:textSize="25sp"
+        android:textColor="#FFFF00"
+        android:padding="15sp"
+        android:layout_marginBottom="25dp"
+        android:layout_marginTop="25dp"/>
+
+    <LinearLayout
+        android:id="@+id/levelButtons"
+        android:layout_below="@id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/buttonShowStatsEasy"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="EASY"
+            android:background="@drawable/text_roundededges"
+            android:fontFamily="@font/gamefont"
+            android:textSize="10sp"
+            android:textColor="#FFFF00"
+            android:layout_marginBottom="25dp"
+            android:layout_marginLeft="10dp"
+            android:padding="15dp"/>
+
+        <Button
+            android:id="@+id/btnButton2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="MEDIUM"
+            android:background="@drawable/text_roundededges"
+            android:fontFamily="@font/gamefont"
+            android:textSize="10sp"
+            android:textColor="#FFFF00"
+            android:layout_marginBottom="25dp"
+            android:layout_marginLeft="10dp"
+            android:padding="15dp"/>
+
+
+        <Button
+            android:id="@+id/btnButton3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="HARD"
+            android:background="@drawable/text_roundededges"
+            android:fontFamily="@font/gamefont"
+            android:textSize="10sp"
+            android:textColor="#FFFF00"
+            android:layout_marginBottom="25dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:padding="15dp"
+            />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_above="@id/buttonBack"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/levelButtons"
+        android:orientation="vertical">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:minHeight="250dp">
+
+            <LinearLayout
+                android:id="@+id/statsList"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+
+
+            </LinearLayout>
+
+        </ScrollView>
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/buttonBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:text="BACK"
+        android:layout_marginTop="25dp"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/text_roundededges"
+        android:fontFamily="@font/gamefont"
+        android:textSize="10sp"
+        android:textColor="#FFFF00"
+        android:layout_marginBottom="25dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:padding="15dp"/>
+
+</RelativeLayout>

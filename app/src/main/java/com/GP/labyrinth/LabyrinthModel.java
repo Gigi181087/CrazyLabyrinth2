@@ -11,6 +11,7 @@ import com.GP.coordinates.Grid;
 import com.GP.labyrinth.Ball;
 import com.GP.labyrinth.LabyrinthModel;
 import com.GP.labyrinth.LabyrinthView;
+import com.GP.mqtt.MQTTManager;
 
 import java.util.ArrayList;
 import java.util.List;

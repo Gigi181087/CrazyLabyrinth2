@@ -72,8 +72,17 @@ public class DatabaseAccess extends SQLiteOpenHelper {
      * @return
      */
     public Cursor createListViewCursor() {
-        String[] columns = new String[]{"_id", "name", "vorname", "geburtsdatum"};
+        String[] columns = new String[]{"_id", "Name", "Time", "H"};
         return  database.query(table, columns, null, null, null, null, "name");
+    }
+
+    public Cursor getData(String columnParam, String filterParam) {
+        String[] _columns = {"Name", "Date", "Time"};
+        String _selection = "Level = ?";
+        String[] _selectionArguments = {"Hard"};
+        String _orderBy = "Time ASC";
+
+        return database.query("CrazyLabyrinth", _columns, _selection, _selectionArguments, null, null, _orderBy);
     }
 
     @Override

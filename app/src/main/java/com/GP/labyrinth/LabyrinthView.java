@@ -13,6 +13,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
+import com.GP.coordinates.Grid;
 import com.GP.crazylabyrinth.R;
 import com.GP.labyrinth.LabyrinthModel;
 
@@ -88,12 +89,12 @@ public class LabyrinthView extends View {
                     _canvas.drawRect(j * 100 + 4, i * 100 + 50, j * 100 + 94, i * 100 + 149, _paint);
                 }
 
-                if(labyrinthModelParam.Start.Equals(labyrinthModelParam.new Grid(j, i))) {
+                if(labyrinthModelParam.Start.Equals(new Grid(j, i))) {
                     _paint.setColor(Color.rgb(0, 255, 0));
                     _canvas.drawRect(j * 100 + 4, i * 100 + 4, j * 100 + 94, i * 100 + 94, _paint);
                     _paint.setColor(Color.rgb(0, 0, 128));
 
-                } else if(labyrinthModelParam.End.Equals(labyrinthModelParam.new Grid(j, i))) {
+                } else if(labyrinthModelParam.End.Equals(new Grid(j, i))) {
                     _paint.setColor(Color.RED);
                     _canvas.drawRect(j * 100 + 4, i * 100 + 4, j * 100 + 94, i * 100 + 94, _paint);
                     _paint.setColor(Color.rgb(0, 0 , 128));
@@ -120,13 +121,13 @@ public class LabyrinthView extends View {
         if(keyBitmap != null) {
             _canvas.drawBitmap(this.keyBitmap, 0, 0, null);
         }
-        _canvas.drawBitmap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.ball), (int)(100), (int)(100), false), (labyrinth.Ball.XPosition * 100) - 50, (labyrinth.Ball.YPosition * 100) - 50, null);
+        _canvas.drawBitmap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.ball), (int)(100), (int)(100), false), (labyrinth.Ball.Position.X * 100) - 50, (labyrinth.Ball.Position.Y * 100) - 50, null);
 
         if(this.labyrinth.Level == LabyrinthModel.Difficulty.HARD) {
             Canvas _shadow = new Canvas(this.shadowBitmap);
             Paint _paint = new Paint();
             _paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-            _shadow.drawCircle((this.labyrinth.Ball.XPosition * 100), (this.labyrinth.Ball.YPosition * 100), 150, _paint);
+            _shadow.drawCircle((this.labyrinth.Ball.Position.X * 100), (this.labyrinth.Ball.Position.Y * 100), 150, _paint);
             _canvas.drawBitmap(this.shadowBitmap, 0, 0, null);
         }
         canvas.drawBitmap(Bitmap.createScaledBitmap(_bitmap, (int)(labyrinth.Width * 100 * this.scaleFactor), (int)(this.labyrinth.Height * 100 * this.scaleFactor), true), 0, 0, null);

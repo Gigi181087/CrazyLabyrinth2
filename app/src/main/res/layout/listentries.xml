@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@drawable/text_roundededges">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:layout_left="@id/timeLayout"
+        android:orientation="horizontal" >
+
+    <TextView
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/number"
+            android:text="1"
+            android:gravity="end|center_vertical"
+            android:paddingBottom="5dp"
+            android:paddingLeft="5dp"
+            android:paddingTop="5dp"
+            android:fontFamily="@font/gamefont"
+            android:textColor="#FFFF00"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/name"
+            android:layout_marginLeft="25dp"
+            android:fontFamily="@font/gamefont"
+            android:gravity="start|center_vertical"
+            android:paddingRight="5dp"
+            android:text="NAME"
+            android:textColor="#FFFF00" />
+
+    </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/timeLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_alignParentEnd="true">
+
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="25dp"
+                android:id="@+id/date"
+                android:layout_alignParentEnd="true"
+                android:text="DATE"
+                android:gravity="center_vertical"
+                android:layout_marginLeft="25dp"
+                android:paddingRight="5dp"
+                android:fontFamily="@font/gamefont"
+                android:layout_marginTop="10dp"
+                android:textColor="#FFFF00"
+                android:textSize="10sp"/>
+
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="25dp"
+                android:id="@+id/time"
+                android:text="TIME"
+                android:gravity="center_vertical"
+                android:layout_marginLeft="25dp"
+                android:paddingRight="5dp"
+                android:fontFamily="@font/gamefont"
+                android:textColor="#FFFF00"
+                android:textSize="10sp"/>
+
+        </LinearLayout>
+
+
+
+</RelativeLayout>

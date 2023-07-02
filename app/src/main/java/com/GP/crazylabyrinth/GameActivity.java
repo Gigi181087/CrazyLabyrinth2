@@ -1,27 +1,39 @@
 package com.GP.crazylabyrinth;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.WindowManager;
 
+import com.GP.dialogs.SettingsMenu;
 import com.GP.labyrinth.LabyrinthModel;
 import com.GP.labyrinth.LabyrinthView;
 import com.GP.labyrinth.Ball;
 import com.GP.mqtt.MQTTManager;
+import com.google.android.material.internal.ContextUtils;
 
-public class GameActivity extends AppCompatActivity implements SensorEventListener, LabyrinthModel.LabyrinthEventListener, MQTTManager.MQTTEventListener {
+public class GameActivity extends AppCompatActivity implements SensorEventListener, LabyrinthModel.LabyrinthEventListener, MQTTManager.MQTTEventListener, SettingsMenu.ListenerSettings {
+    private SharedPreferences sharedPreferences;
+    private boolean vibratorUsed;
+    private boolean remoteUsed;
+    private boolean soundUsed;
     private Handler fpsHandler = new Handler();
     private Runnable fpsRunnable = new Runnable() {
         @Override
@@ -36,7 +48,7 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
         ACCELERATOR
     }
 
-    private controls usercontrols;
+    private controls userControls;
 
     //private final Display display;
     private LabyrinthModel labyrinth;
@@ -77,32 +89,75 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_game);
         this.labyrinthView = (LabyrinthView) findViewById(R.id.labyrinth_view);
         labyrinthView.DrawLabyrinth(labyrinth, _displayMetrics.widthPixels, _displayMetrics.heightPixels);
+
+        onSettingsChanged();
+    }
+
+    private void registerAll() {
+        fpsHandler.postDelayed(fpsRunnable, 1000 / 24);
+        labyrinth.registerEventListener(this);
+        if(userControls == controls.ACCELERATOR) {
+            _sensorManager.registerListener(this, _accelerometer, SensorManager.SENSOR_DELAY_GAME);
+
+        } else {
+            // TODO: subscribe MQTT
+
+        }
+
+    }
+
+    private void unregisterAll() {
+        fpsHandler.removeCallbacks(fpsRunnable);
+        labyrinth.removeEventListener(this);
+
+        if(this.userControls == controls.ACCELERATOR) {
+            _sensorManager.unregisterListener(this);
+
+        } else {
+            // TODO: unsubscribe MQTT
+        }
+    }
+
+    @Override
+    public void onSettingsChanged() {
+        sharedPreferences = this.getSharedPreferences("CrazyLabyrinthSettings", Context.MODE_PRIVATE);
+        vibratorUsed = sharedPreferences.getBoolean("Vibrator", true);
+        remoteUsed = sharedPreferences.getBoolean("Remote", false);
+        soundUsed = sharedPreferences.getBoolean("Sound", true);
+
+    }
+
+
+    @Override
+    public void onNewMessage(String topicParam, String messageParam) {
+
+    }
+
+    private void subscribeMQTT() {
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        fpsHandler.postDelayed(fpsRunnable, 1000 / 24);
-        _sensorManager.registerListener(this, _accelerometer, SensorManager.SENSOR_DELAY_GAME);
-        labyrinth.registerEventListener(this);
+        this.registerAll();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        fpsHandler.removeCallbacks(fpsRunnable);
-        _sensorManager.unregisterListener(this);
-        labyrinth.removeEventListener(this);
+        this.unregisterAll();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        fpsHandler.removeCallbacks(fpsRunnable);
-        _sensorManager.unregisterListener(this);
-        labyrinth.removeEventListener(this);
+        this.unregisterAll();
     }
 
+    /*
+     * Sensor event handling
+     */
     @Override
     public void onSensorChanged(@NonNull SensorEvent event) {
 
@@ -117,6 +172,9 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
+    /*
+     * Labyrinth event handling
+     */
     @Override
     public void OnGameWon() {
         fpsHandler.removeCallbacks(fpsRunnable);
@@ -128,22 +186,28 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
      * Lets the phone vibrate when the wall is touched
      * @param param Speed of the ball during impact
      */
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void OnWallTouched(float param) {
-        if (param < 0) {
-            param *= -1;
-        }
-        int _intensity = 0;
 
-        if (param > 10) {
-            _intensity = 255;
+        if (vibratorUsed) {
 
-        } else {
-            _intensity = (int) (25 * param);
-        }
-        if (_intensity > 0) {
-            VibrationEffect effect = VibrationEffect.createOneShot(100, _intensity);
-            this.vibrator.vibrate(effect);
+            if (param < 0) {
+                param *= -1;
+            }
+            int _intensity = 0;
+
+            if (param > 10) {
+                _intensity = 255;
+
+            } else {
+                _intensity = (int) (25 * param);
+            }
+
+            if (_intensity > 0) {
+                VibrationEffect effect = VibrationEffect.createOneShot(100, _intensity);
+                this.vibrator.vibrate(effect);
+            }
         }
     }
 

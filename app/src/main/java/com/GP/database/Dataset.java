@@ -5,6 +5,7 @@ import java.util.Date;
 
 public class Dataset {
     public long Id;
+    public String Level;
     public String _alias;
     public Time _time;
     public Date _date;
@@ -16,10 +17,11 @@ public class Dataset {
         this.Id = -1;
     }
 
-    public Dataset(String alias, Time time, Date date) {
+    public Dataset(String alias, Time time, Date date, String levelParam) {
         this._alias = alias;
         this._date = date;
         this._time = time;
+        this.Level = levelParam;
         this.Id = -1;
     }
 }

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">CrazyLabyrinth</string>
+    <string name="new_game">NEW GAME</string>
 </resources>
