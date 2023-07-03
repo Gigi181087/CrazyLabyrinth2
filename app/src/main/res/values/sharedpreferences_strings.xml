@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sharedPreferences_name">CrazyLabyrinthPreferences</string>
+    <string name="playerfieldname">playername</string>
+    <string name="playerDefaultValue">PLAYER</string>
+</resources>

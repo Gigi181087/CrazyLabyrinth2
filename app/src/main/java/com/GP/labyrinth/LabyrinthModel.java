@@ -354,7 +354,7 @@ public class LabyrinthModel {
 
         private static void resolveMovement() {
             startGrid = new Grid((int)movementVector.StartPosition.X, (int)movementVector.StartPosition.Y);
-            LabyrinthCell _cell = labyrinth.Cells[(int)labyrinth.Ball.Position.Y][(int)labyrinth.Ball.Position.X];
+            LabyrinthCell _cell = labyrinth.Cells[(int)labyrinth.Ball.Position.X][(int)labyrinth.Ball.Position.Y];
             labyrinth.Ball.Position = movementVector.EndPosition;
              /*
             // Collision
