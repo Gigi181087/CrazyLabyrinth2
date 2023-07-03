@@ -31,7 +31,7 @@ public class Grid {
         }
     }
 
-    private void Clone(@NonNull Grid gridParam) {
+    public void Clone(@NonNull Grid gridParam) {
         this.X = gridParam.X;
         this.Y = gridParam.Y;
     }

@@ -6,51 +6,35 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="#FFFF00"
     android:gravity="center" >
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="50dp">
+        android:gravity="center"
+                android:layout_marginBottom="50dp"
+        android:layout_marginTop="50dp">
 
 
-            <TextView
-                android:id="@+id/playerNameImageView"
-
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginLeft="50dp"
-                android:background="@drawable/text_roundededges"
-                android:fontFamily="@font/gamefont"
-                android:padding="15dp"
-                android:text="NAME"
-                android:textColor="#FFFF00"
-                android:textSize="20sp"
-                android:layout_alignParentStart="true"/>
-
-
-            <EditText
+        <EditText
                 android:id="@+id/playerNameTextView"
-                android:layout_width="wrap_content"
+                android:layout_width="350dp"
                 android:layout_height="wrap_content"
-
-                android:layout_marginRight="50dp"
+                android:gravity="center"
                 android:background="@drawable/text_roundededges"
                 android:fontFamily="@font/gamefont"
                 android:padding="15dp"
+            android:layout_centerHorizontal="true"
+
                 android:text="PLAYER"
                 android:textColor="#FFFF00"
-                android:textSize="20sp"
-                android:layout_alignParentEnd="true"/>
+                android:textSize="20sp"/>
 
 
     </RelativeLayout>
 
     <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="25dp"
@@ -58,16 +42,16 @@
 
         <EditText
             android:id="@+id/ipTextView"
-            android:layout_width="wrap_content"
+            android:layout_width="350dp"
             android:layout_height="wrap_content"
             android:text="127.0.0.1"
+            android:gravity="center"
             android:layout_gravity="center"
             android:background="@drawable/text_roundededges"
             android:fontFamily="@font/gamefont"
             android:textSize="20sp"
             android:textColor="#FFFF00"
             android:layout_marginBottom="15dp"
-            android:layout_alignParentStart="true"
 
             android:padding="15dp"/>
 
@@ -76,8 +60,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="50dp">
             <Button
-                android:id="@+id/connectImageButton"
-                android:layout_width="wrap_content"
+                android:id="@+id/connectButton"
+                android:layout_width="150dp"
                 android:layout_height="wrap_content"
                 android:text="CONNECT"
                 android:layout_gravity="center"
@@ -86,22 +70,26 @@
                 android:textSize="15sp"
                 android:textColor="#FFFF00"
                 android:layout_alignParentStart="true"
-                android:layout_marginLeft="50dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="10dp"
                 android:padding="15dp"/>
 
             <Button
-                android:id="@+id/soundImageButton"
-                android:text="REMOTE"
-                android:layout_width="wrap_content"
+                android:id="@+id/remoteButton"
+                android:layout_width="150dp"
                 android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
                 android:layout_gravity="center"
+                android:layout_marginStart="50dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginBottom="50dp"
                 android:background="@drawable/text_roundededges"
                 android:fontFamily="@font/gamefont"
-                android:textSize="15sp"
+                android:padding="15dp"
+                android:text="REMOTE"
                 android:textColor="#FFFF00"
-                android:layout_alignParentEnd="true"
-                android:layout_marginRight="50dp"
-                android:padding="15dp"/>
+                android:textSize="15sp" />
         </RelativeLayout>
     </LinearLayout>
 
@@ -111,9 +99,9 @@
         android:orientation="vertical">
 
         <Button
-            android:id="@+id/vibrateImageButton"
+            android:id="@+id/soundButton"
             android:text="SOUND OFF"
-            android:layout_width="wrap_content"
+            android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:background="@drawable/text_roundededges"
@@ -124,9 +112,9 @@
             android:padding="15dp"/>
 
         <Button
-            android:id="@+id/closeImageButton"
+            android:id="@+id/vibrateButton"
             android:text="VIBRATE OFF"
-            android:layout_width="wrap_content"
+            android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:background="@drawable/text_roundededges"
@@ -141,6 +129,7 @@
     </LinearLayout>
 
 <Button
+    android:id="@+id/closeButton"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:text="CLOSE"
@@ -148,6 +137,7 @@
     android:background="@drawable/text_roundededges"
     android:fontFamily="@font/gamefont"
     android:textSize="15sp"
+    android:layout_marginBottom="50dp"
     android:textColor="#FFFF00"/>
 
 

@@ -2,6 +2,7 @@ package com.GP.dialogs;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,15 +19,12 @@ public class StartMenu extends DialogFragment {
     private Button buttonNewGame;
     private Button buttonHighscores;
     private Button buttonSettings;
-    private Button buttonClose;
+    private Button buttonQuit;
 
     private listenerStartMenuButtons listener;
 
     public interface listenerStartMenuButtons {
-        void onButtonNewGame();
-        void onButtonHighscores();
-        void onButtonSettings();
-        void onButtonClose();
+        void onStartMenuButtonPressed(String buttonPressedParam);
     }
 
     @Override
@@ -45,68 +43,30 @@ public class StartMenu extends DialogFragment {
         // Erstelle den Dialog und setze das Layout
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
-        View view = inflater.inflate(R.layout.dialog_startmenu, null);
-        builder.setView(view);
+        View _view = inflater.inflate(R.layout.dialog_startmenu, null);
+        builder.setView(_view);
 
         // Finde den Button im Dialogfenster
-        buttonNewGame = view.findViewById(R.id.buttonNewGame);
-        buttonHighscores = view.findViewById(R.id.buttonHighscores);
-        buttonSettings = view.findViewById(R.id.buttonSettings);
-        buttonClose = view.findViewById(R.id.buttonClose);
+        buttonNewGame = _view.findViewById(R.id.buttonNewGame);
+        buttonHighscores = _view.findViewById(R.id.buttonHighscores);
+        buttonSettings = _view.findViewById(R.id.buttonSettings);
+        buttonQuit = _view.findViewById(R.id.buttonQuit);
 
         // Setze den OnClickListener für den Button
-        buttonNewGame.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
+        buttonNewGame.setOnClickListener(view -> goBack("NEW GAME"));
 
-                // Öffne das neue Dialogfragment
-                if(listener != null) {
-                    listener.onButtonNewGame();
-                }
-                dismiss();
-            }
-        });
+        buttonHighscores.setOnClickListener(view -> goBack("HIGHSCORES"));
 
-        buttonHighscores.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
+        buttonSettings.setOnClickListener(view -> goBack("SETTINGS"));
 
-                // Öffne das neue Dialogfragment
-                if(listener != null) {
-                    listener.onButtonHighscores();
-                }
-                dismiss();
-            }
-        });
-
-        buttonSettings.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
-
-                // Öffne das neue Dialogfragment
-                if(listener != null) {
-                    listener.onButtonSettings();
-                }
-                dismiss();
-            }
-        });
-
-        buttonClose.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
-
-                // Öffne das neue Dialogfragment
-                if(listener != null) {
-                    listener.onButtonClose();
-                }
-                dismiss();
-            }
-        });
+        buttonQuit.setOnClickListener(view -> goBack("QUIT"));
 
         return builder.create();
+    }
+
+    private void goBack(String buttonPressedParam) {
+        listener.onStartMenuButtonPressed(buttonPressedParam);
+
+        dismiss();
     }
 }

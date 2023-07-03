@@ -4,25 +4,24 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="#FFFF00"
     android:gravity="center" >
 
     <Button
         android:id="@+id/buttonNewGame"
         android:text="NEW GAME"
-        android:layout_width="wrap_content"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:background="@drawable/text_roundededges"
-        android:fontFamily="@font/gamefont"
         android:textSize="25sp"
-        android:textColor="#FFFF00"
+        android:layout_marginTop="50dp"
         android:layout_marginBottom="50dp"
+        style="@style/ButtonStandardStyle"
         android:padding="15dp"/>
 
     <Button
         android:id="@+id/buttonHighscores"
         android:text="HIGHSCORE"
-        android:layout_width="wrap_content"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:background="@drawable/text_roundededges"
@@ -34,19 +33,19 @@
 
     <Button
         android:id="@+id/buttonSettings"
-        android:text="SETTINGS"
-        android:layout_width="wrap_content"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:layout_marginBottom="150dp"
         android:background="@drawable/button_selector"
         android:fontFamily="@font/gamefont"
-        android:textSize="25sp"
+        android:padding="15dp"
+        android:text="SETTINGS"
         android:textColor="#FFFF00"
-        android:layout_marginBottom="50dp"
-        android:padding="15dp"/>
+        android:textSize="25sp" />
 
     <Button
-        android:id="@+id/buttonClose"
+        android:id="@+id/buttonQuit"
         android:text="QUIT"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -55,7 +54,7 @@
         android:fontFamily="@font/gamefont"
         android:textSize="25sp"
         android:textColor="#FFFF00"
-        android:layout_marginBottom="50dp"
-        android:padding="15dp"/>
+        android:padding="15dp"
+        android:layout_marginBottom="50dp"/>
 
 </LinearLayout>

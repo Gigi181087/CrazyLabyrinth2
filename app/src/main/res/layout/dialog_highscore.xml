@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".HighscoreActivity">
+    android:background="#0000F0">
 
     <TextView
         android:id="@+id/header"
@@ -42,7 +42,7 @@
             android:padding="15dp"/>
 
         <Button
-            android:id="@+id/btnButton2"
+            android:id="@+id/buttonShowStatsMedium"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -57,7 +57,7 @@
 
 
         <Button
-            android:id="@+id/btnButton3"
+            android:id="@+id/buttonShowStatsHard"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"

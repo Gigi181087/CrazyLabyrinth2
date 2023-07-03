@@ -1,32 +1,36 @@
 package com.GP.crazylabyrinth;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageButton;
-
+import com.GP.dialogs.Highscore;
 import com.GP.dialogs.NewGameMenu;
 import com.GP.dialogs.SettingsMenu;
 import com.GP.dialogs.StartMenu;
 import com.GP.mqtt.MQTTManager;
 
-public class MainMenuActivity extends AppCompatActivity implements NewGameMenu.listenerNewGameButtons, StartMenu.listenerStartMenuButtons, SettingsMenu.ListenerSettings {
+import java.io.File;
+
+public class MainMenuActivity extends AppCompatActivity implements NewGameMenu.listenerNewGameButtons, StartMenu.listenerStartMenuButtons, SettingsMenu.ListenerSettings, Highscore.listenerHighscoreButtons {
 // TODO: draw background labyrinth
-    private StartMenu dialogStartMenu;
+    private StartMenu dialogStart;
     private NewGameMenu dialogNewGame;
     private SettingsMenu dialogSettings;
+    private Highscore dialogHighscore;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
         getSupportActionBar().hide();
+
+        // Initialize Database
+        File dbFile = this.getDatabasePath(this.getString(R.string.database_name));
+        String _sqlCommand = null;
 
         // Initialize the MQTT Manager
         MQTTManager.initialize(getApplicationContext());
@@ -35,15 +39,29 @@ public class MainMenuActivity extends AppCompatActivity implements NewGameMenu.l
     }
 
     private void openDialogStartMenu() {
-        dialogStartMenu.show(getSupportFragmentManager(), null);
+        this.dialogStart = new StartMenu();
+        this.dialogStart.show(getSupportFragmentManager(), null);
     }
 
     private void openDialogNewGame() {
-        dialogNewGame.show(getSupportFragmentManager(), null);
+        this.dialogNewGame = new NewGameMenu();
+        this.dialogNewGame.show(getSupportFragmentManager(), null);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        this.openDialogStartMenu();
     }
 
     private void openDialogSettings() {
-        dialogSettings.show(getSupportFragmentManager(), null);
+        this.dialogSettings = new SettingsMenu();
+        this.dialogSettings.show(getSupportFragmentManager(), null);
+    }
+
+    private void openDialogHighscore() {
+        this.dialogHighscore = new Highscore();
+        this.dialogHighscore.show(getSupportFragmentManager(), null);
     }
 
     private void startGame(int levelParam) {
@@ -55,88 +73,66 @@ public class MainMenuActivity extends AppCompatActivity implements NewGameMenu.l
         startActivity(_intent);
     }
 
-
-    /*
-     * StartMenu events
-     */
-
-    /**
-     * Opens the NewGame dialog
-     */
     @Override
-    public void onButtonNewGame() {
-        this.openDialogNewGame();
-    }
-
-    /**
-     * Opens the Highscore activity
-     */
-    @Override
-    public void onButtonHighscores() {
-        startActivity(new Intent(this, HighscoreActivity.class));
-    }
-
-    /**
-     * Opens the Settings dialog
-     */
-    @Override
-    public void onButtonSettings() {
-        this.openDialogSettings();
-    }
-
-    /**
-     * Closes the app
-     */
-    @Override
-    public void onButtonClose() {
-        Log.d("Main Activity", "User closed App");
-        this.finish();
-        System.exit(0);
-    }
-
-    /*
-     * NewGame events
-     */
-
-    /**
-     * Starts game in easy mode
-     */
-    @Override
-    public void onButtonEasy() {
-        this.startGame(0);
-    }
-
-    /**
-     * Starts game in medium mode
-     */
-    @Override
-    public void onButtonMedium() {
-        this.startGame(1);
-    }
-
-    /**
-     * Starts game in hard mode
-     */
-    @Override
-    public void onButtonHard() {
-        this.startGame(2);
-    }
-
-    /**
-     * Returns to the start menu
-     */
-    @Override
-    public void onButtonBack() {
+    public void onSettingsButtonPressed(boolean settingsChangedParam) {
         this.openDialogStartMenu();
     }
-
-    /*
-     * Settings events
-     */
     @Override
-    public void onSettingsChanged() {
+    public void onStartMenuButtonPressed(@NonNull String buttonPressedParam) {
 
+        switch(buttonPressedParam) {
+
+            case "NEW GAME":
+                this.openDialogNewGame();
+
+                break;
+
+            case "HIGHSCORES":
+                this.openDialogHighscore();
+
+                break;
+
+            case "SETTINGS":
+                this.openDialogSettings();
+
+                break;
+
+            case "QUIT":
+                Log.d("Main Activity", "User closed App");
+                this.finish();
+                System.exit(0);
+
+        }
     }
 
+    @Override
+    public void onNewGameButtonPressed(@NonNull String buttonPressedParam) {
 
+        switch(buttonPressedParam) {
+
+            case "EASY":
+                this.startGame(0);
+
+                break;
+
+            case "MEDIUM":
+                this.startGame(1);
+
+                break;
+
+            case "HARD":
+                this.startGame(2);
+
+                break;
+
+            case "BACK":
+                this.openDialogStartMenu();
+
+        }
+    }
+
+    @Override
+    public void onHighscoreButtonPressed(String buttonPressedParam) {
+        this.openDialogStartMenu();
+    }
 }

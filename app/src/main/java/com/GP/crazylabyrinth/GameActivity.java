@@ -21,7 +21,9 @@ import android.os.Vibrator;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.WindowManager;
+import android.widget.Button;
 
+import com.GP.dialogs.NewGameMenu;
 import com.GP.dialogs.SettingsMenu;
 import com.GP.labyrinth.LabyrinthModel;
 import com.GP.labyrinth.LabyrinthView;
@@ -34,6 +36,8 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
     private boolean vibratorUsed;
     private boolean remoteUsed;
     private boolean soundUsed;
+
+    private Button settingsButton;
     private Handler fpsHandler = new Handler();
     private Runnable fpsRunnable = new Runnable() {
         @Override
@@ -67,6 +71,7 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
     protected void onCreate(Bundle savedInstanceStateParam) {
         super.onCreate(savedInstanceStateParam);
 
+        LabyrinthModel.Difficulty _difficulty = LabyrinthModel.Difficulty.fromInt(getIntent().getIntExtra("level", 2));
         // Force display to not rotate and disable ugly action bar
         this.vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -82,7 +87,7 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
         _sensorManager.registerListener(this, _accelerometer, SensorManager.SENSOR_DELAY_GAME);
 
         // Initialize Labyrinth
-        labyrinth = new LabyrinthModel(10, 16, LabyrinthModel.Difficulty.MEDIUM);
+        labyrinth = new LabyrinthModel(10, 14, _difficulty);
         labyrinth.registerEventListener(this);
 
         // Handle activity view
@@ -90,7 +95,16 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
         this.labyrinthView = (LabyrinthView) findViewById(R.id.labyrinth_view);
         labyrinthView.DrawLabyrinth(labyrinth, _displayMetrics.widthPixels, _displayMetrics.heightPixels);
 
-        onSettingsChanged();
+        settingsButton = findViewById(R.id.settingsButton);
+        settingsButton.setOnClickListener(view -> showSettingsDialog());
+
+        onSettingsButtonPressed(true);
+    }
+
+    private void showSettingsDialog() {
+        SettingsMenu _settingsDialog = new SettingsMenu();
+        _settingsDialog.show(getSupportFragmentManager(), null);
+
     }
 
     private void registerAll() {
@@ -116,15 +130,6 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
         } else {
             // TODO: unsubscribe MQTT
         }
-    }
-
-    @Override
-    public void onSettingsChanged() {
-        sharedPreferences = this.getSharedPreferences("CrazyLabyrinthSettings", Context.MODE_PRIVATE);
-        vibratorUsed = sharedPreferences.getBoolean("Vibrator", true);
-        remoteUsed = sharedPreferences.getBoolean("Remote", false);
-        soundUsed = sharedPreferences.getBoolean("Sound", true);
-
     }
 
 
@@ -162,7 +167,7 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
     public void onSensorChanged(@NonNull SensorEvent event) {
 
         if(event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            labyrinth.Ball.UpdatePosition(-event.values[0], event.values[1]);
+            labyrinth.updateBallPosition(-event.values[0], event.values[1]);
             //labyrinthView.postInvalidate();
         }
     }
@@ -214,5 +219,13 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void OnKeyCollected() {
         this.labyrinthView.RemoveKey();
+    }
+
+    @Override
+    public void onSettingsButtonPressed(boolean settingsChanged) {
+        sharedPreferences = this.getSharedPreferences("CrazyLabyrinthSettings", Context.MODE_PRIVATE);
+        vibratorUsed = sharedPreferences.getBoolean("Vibrator", true);
+        remoteUsed = sharedPreferences.getBoolean("Remote", false);
+        soundUsed = sharedPreferences.getBoolean("Sound", true);
     }
 }

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
@@ -18,18 +19,15 @@ import com.GP.crazylabyrinth.R;
 
 public class NewGameMenu extends DialogFragment {
     
-    private ImageButton buttonEasy;
-    private ImageButton buttonMedium;
-    private ImageButton buttonHard;
-    private ImageButton buttonBack;
+    private Button buttonEasy;
+    private Button buttonMedium;
+    private Button buttonHard;
+    private Button buttonBack;
 
     private listenerNewGameButtons listener;
 
     public interface listenerNewGameButtons {
-        void onButtonEasy();
-        void onButtonMedium();
-        void onButtonHard();
-        void onButtonBack();
+        void onNewGameButtonPressed(String buttonPressedParam);
     }
 
     @Override
@@ -48,70 +46,30 @@ public class NewGameMenu extends DialogFragment {
         // Erstelle den Dialog und setze das Layout
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
-        View view = inflater.inflate(R.layout.dialog_newgame, null);
-        builder.setView(view);
+        View _view = inflater.inflate(R.layout.dialog_newgame, null);
+        builder.setView(_view);
 
-        // Finde den Button im Dialogfenster
-        buttonEasy = view.findViewById(R.id.buttonEasy);
-        buttonMedium = view.findViewById(R.id.buttonEasy);
-        buttonHard = view.findViewById(R.id.buttonEasy);
-        buttonBack = view.findViewById(R.id.buttonBack);
+        buttonEasy = _view.findViewById(R.id.buttonEasy);
+        buttonMedium = _view.findViewById(R.id.buttonMedium);
+        buttonHard = _view.findViewById(R.id.buttonHard);
+        buttonBack = _view.findViewById(R.id.buttonBack);
 
         // Setze den OnClickListener für den Button
-        buttonEasy.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
+        buttonEasy.setOnClickListener(view -> notifyButtonPressed("EASY"));
 
-                // Öffne das neue Dialogfragment
-                if(listener != null) {
-                    listener.onButtonEasy();
-                }
-                dismiss();
-            }
-        });
+        buttonMedium.setOnClickListener(view -> notifyButtonPressed("MEDIUM"));
 
-        buttonMedium.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
+        buttonHard.setOnClickListener(view -> notifyButtonPressed("HARD"));
 
-                // Öffne das neue Dialogfragment
-                if(listener != null) {
-                    listener.onButtonMedium();
-                }
-                dismiss();
-            }
-        });
-
-        buttonHard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
-
-                // Öffne das neue Dialogfragment
-                if(listener != null) {
-                    listener.onButtonHard();
-                }
-                dismiss();
-            }
-        });
-
-        buttonBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
-
-                // Öffne das neue Dialogfragment
-                if(listener != null) {
-                    listener.onButtonBack();
-                }
-                dismiss();
-            }
-        });
+        buttonBack.setOnClickListener(view -> notifyButtonPressed("BACK"));
 
         return builder.create();
     }
 
+    public void notifyButtonPressed(String buttonPressedParam) {
+        listener.onNewGameButtonPressed(buttonPressedParam);
+
+        dismiss();
+    }
 
 }

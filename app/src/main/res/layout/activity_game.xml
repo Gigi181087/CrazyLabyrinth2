@@ -1,12 +1,14 @@
-<FrameLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#0000F0"
     android:screenOrientation="portrait">
 
 
-    <LinearLayout
+    <RelativeLayout
+        android:id="@+id/textLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -15,42 +17,50 @@
 
         <TextView
             android:id="@+id/textView1"
-            android:layout_width="match_parent"
+            android:layout_width="150dp"
+            android:background="@drawable/text_roundededges"
             android:layout_height="wrap_content"
-            android:text="Textfeld 1" />
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="10dp"
+android:layout_marginTop="25dp"
+            style="@style/TextViewStandardStyle"
+            android:textSize="20sp"
+            android:text="TEMP" />
 
         <TextView
             android:id="@+id/textView2"
-            android:layout_width="0dp"
+            style="@style/TextViewStandardStyle"
+            android:layout_width="150dp"
             android:layout_height="wrap_content"
-            android:text="Textfeld 2" />
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="10dp"
+            android:text="TIME"
+android:layout_marginTop="25dp"
+            android:textSize="20sp" />
 
-    </LinearLayout>
+    </RelativeLayout>
 
 
     <com.GP.labyrinth.LabyrinthView
         android:id="@+id/labyrinth_view"
+        android:layout_above="@+id/settingsButton"
+        android:layout_below="@id/textLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
         android:layout_weight="1" />
 
+    <Button
+        android:id="@+id/settingsButton"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:text="SETTINGS"
+        style="@style/ButtonStandardStyle"
+        android:gravity="center"
+        android:layout_marginBottom="25dp"
+        android:layout_marginTop="25dp"
+        android:layout_alignParentBottom="true" />
 
-    <ImageButton
-        android:id="@+id/button1"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_gravity="bottom|start"
-        android:src="@drawable/remote_icon"
-        android:scaleType="centerInside" />
-
-
-    <ImageButton
-        android:id="@+id/button2"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_gravity="bottom|end"
-        android:src="@drawable/remote_icon"
-        android:scaleType="centerInside" />
-
-</FrameLayout>
+</RelativeLayout>
 

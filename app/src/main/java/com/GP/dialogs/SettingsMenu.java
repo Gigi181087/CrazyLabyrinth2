@@ -38,7 +38,7 @@ public class SettingsMenu extends DialogFragment {
     private ListenerSettings listener;
 
     public interface ListenerSettings {
-        void onSettingsChanged();
+        void onSettingsButtonPressed(boolean settingsChangedParam);
     }
 
     @Override
@@ -62,16 +62,16 @@ public class SettingsMenu extends DialogFragment {
         // Finde den Button im Dialogfenster
         this.playerText = view.findViewById(R.id.playerNameTextView);
         this.ipText = view.findViewById(R.id.ipTextView);
-        this.connectButton = view.findViewById(R.id.connectImageButton);
-        this.soundButton = view.findViewById(R.id.soundImageButton);
-        this.vibratorButton = view.findViewById(R.id.vibrateImageButton);
-        this.closeButton = view.findViewById(R.id.closeImageButton);
+        this.connectButton = view.findViewById(R.id.connectButton);
+        this.soundButton = view.findViewById(R.id.soundButton);
+        this.vibratorButton = view.findViewById(R.id.vibrateButton);
+        this.closeButton = view.findViewById(R.id.closeButton);
 
         // Get settings from system
         this.sharedPreferences = getActivity().getSharedPreferences("CrazyLabyrinthSettings", Context.MODE_PRIVATE);
         this.editor = this.sharedPreferences.edit();
 
-        playerName = this.sharedPreferences.getString("Playername", "Player");
+        playerName = this.sharedPreferences.getString("Playername", "PLAYER");
         ip = this.sharedPreferences.getString("IP", "127.0.0.1");
         vibrator = this.sharedPreferences.getBoolean("Vibrator", true);
         sound = this.sharedPreferences.getBoolean("Sound", true);
@@ -80,9 +80,9 @@ public class SettingsMenu extends DialogFragment {
         this.ipText.setText(ip);
 
         if(sound) {
-            this.vibratorButton.setText("SOUND ON");
+            this.soundButton.setText("SOUND ON");
         } else {
-            this.vibratorButton.setText("SOUND OFF");
+            this.soundButton.setText("SOUND OFF");
         }
 
         if(vibrator) {
@@ -146,6 +146,7 @@ public class SettingsMenu extends DialogFragment {
         this.vibratorButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 if(vibrator) {
                     vibratorButton.setText("VIBRATOR OFF");
                     vibrator = false;
@@ -154,6 +155,7 @@ public class SettingsMenu extends DialogFragment {
                     vibratorButton.setText("VIBRATOR ON");
                     vibrator = true;
                 }
+                editor.putBoolean("Vibrator", vibrator);
             }
         });
 
@@ -167,8 +169,10 @@ public class SettingsMenu extends DialogFragment {
                 editor.putBoolean("Vibrator", vibrator);
 
                 if(listener != null) {
-                    listener.onSettingsChanged();
+                    listener.onSettingsButtonPressed(true);
                 }
+
+                editor.apply();
 
                 dismiss();
             }

@@ -3,12 +3,13 @@ package com.GP.dialogs;
 import android.app.Dialog;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,9 +18,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
 import com.GP.crazylabyrinth.R;
-import com.GP.database.DatabaseAccess;
-
-import java.util.List;
+import com.GP.database.CrazyLabyrinthDatabaseAccess;
+import com.GP.database.GameDataset;
 
 public class Highscore extends DialogFragment {
 
@@ -27,22 +27,24 @@ public class Highscore extends DialogFragment {
     private Button buttonMedium;
     private Button buttonHard;
     private Button buttonBack;
-    private DatabaseAccess databaseHelper;
-    private SQLiteDatabase database;
+    private CrazyLabyrinthDatabaseAccess database;
+
+    private LayoutInflater inflater;
+    private View view;
 
     private LinearLayout linearLayoutStats;
 
     private listenerHighscoreButtons listener;
 
     public interface listenerHighscoreButtons {
-        void onButtonBack();
+        void onHighscoreButtonPressed(String buttonPressedParam);
     }
 
     @Override
     public void onAttach(@NonNull Context contextParam) {
         super.onAttach(contextParam);
-        databaseHelper = new DatabaseAccess(contextParam, "CrazyLabyrinthDatabase", null);
-        database = databaseHelper.getReadableDatabase();
+
+
         try {
             listener = (listenerHighscoreButtons) contextParam;
         } catch (ClassCastException e) {
@@ -54,50 +56,35 @@ public class Highscore extends DialogFragment {
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceStateParam) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        LayoutInflater inflater = requireActivity().getLayoutInflater();
-        View view = inflater.inflate(R.layout.dialog_highscore, null);
+        this.inflater = requireActivity().getLayoutInflater();
+        this.view = inflater.inflate(R.layout.dialog_highscore, null);
         builder.setView(view);
+
+        database = new CrazyLabyrinthDatabaseAccess(getActivity());
+        long testvar = 0;
+        testvar = database.insertDataSet(new GameDataset("GIGI", 34875, "23.07.23", "EASY"));
+        Log.d("Database Usage", String.valueOf(testvar));
+        database.insertDataSet(new GameDataset("GIGI", 35875, "24.07.23", "EASY"));
+        database.insertDataSet(new GameDataset("GIGI", 32875, "25.07.23", "EASY"));
+        database.insertDataSet(new GameDataset("GIGI", 29875, "26.07.23", "EASY"));
+        database.insertDataSet(new GameDataset("GIGI", 39875, "27.07.23", "EASY"));
+        database.insertDataSet(new GameDataset("GIGI", 50875, "28.07.23", "EASY"));
+
+        database.debugPrintTable();
 
         linearLayoutStats = view.findViewById(R.id.statsList);
         buttonEasy = view.findViewById(R.id.buttonShowStatsEasy);
-        buttonMedium = view.findViewById(R.id.buttonShowStatsEasy);
-        buttonHard = view.findViewById(R.id.buttonShowStatsEasy);
+        buttonMedium = view.findViewById(R.id.buttonShowStatsMedium);
+        buttonHard = view.findViewById(R.id.buttonShowStatsHard);
         buttonBack = view.findViewById(R.id.buttonBack);
 
-        buttonEasy.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        buttonEasy.setOnClickListener(view -> populateList(0));
 
-                populateList(0);
-            }
-        });
+        buttonMedium.setOnClickListener(view -> populateList(1));
 
-        buttonMedium.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        buttonHard.setOnClickListener(view -> populateList(2));
 
-                populateList(1);
-            }
-        });
-
-        buttonHard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                populateList(2);
-            }
-        });
-
-        buttonBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if(listener != null) {
-                    listener.onButtonBack();
-                }
-                dismiss();
-            }
-        });
+        buttonBack.setOnClickListener(view -> buttonPressed("BACK"));
 
 
 
@@ -109,7 +96,7 @@ public class Highscore extends DialogFragment {
         linearLayoutStats.removeAllViews();
 
         if(levelParam == 0) {
-            _filter = "Easy";
+            _filter = "EASY";
             buttonEasy.setSelected(true);
             buttonEasy.refreshDrawableState();
             buttonMedium.setSelected(false);
@@ -118,7 +105,7 @@ public class Highscore extends DialogFragment {
             buttonHard.refreshDrawableState();
 
         } else if(levelParam == 1) {
-            _filter = "Medium";
+            _filter = "MEDIUM";
             buttonEasy.setSelected(false);
             buttonEasy.refreshDrawableState();
             buttonMedium.setSelected(true);
@@ -127,7 +114,7 @@ public class Highscore extends DialogFragment {
             buttonHard.refreshDrawableState();
 
         } else if(levelParam == 2) {
-            _filter = "Hard";
+            _filter = "HARD";
             buttonEasy.setSelected(false);
             buttonEasy.refreshDrawableState();
             buttonMedium.setSelected(false);
@@ -139,22 +126,38 @@ public class Highscore extends DialogFragment {
             throw new IllegalArgumentException("Parameter of level is not supported!");
         }
 
-        Cursor _cursor = databaseHelper.getData("Level", _filter);
+        Cursor _cursor = database.getFilteredData(_filter);
 
         if(_cursor != null) {
-            _cursor.moveToFirst();
+            int _length = _cursor.getCount();
 
-            do {
-                String _name = _cursor.getString(_cursor.getColumnIndexOrThrow("Name"));
-                String _date = _cursor.getString(_cursor.getColumnIndexOrThrow("Date"));
-                String _time = _cursor.getString(_cursor.getColumnIndexOrThrow("Time"));
+            if (_length > 0) {
+                int _counter = 0;
+                _cursor.moveToFirst();
+                do {
+                    _counter++;
+                    String _name = _cursor.getString(_cursor.getColumnIndexOrThrow("name"));
+                    String _date = _cursor.getString(_cursor.getColumnIndexOrThrow("date"));
+                    int _time = _cursor.getInt(_cursor.getColumnIndexOrThrow("time"));
 
-                // TODO: implement listview
-            } while(_cursor.moveToNext());
+                    View _view = inflater.inflate(R.layout.listentries, linearLayoutStats,false);
+
+                    ((TextView)_view.findViewById(R.id.number)).setText(String.valueOf(_counter));
+                    ((TextView)_view.findViewById(R.id.name)).setText(_name);
+                    ((TextView)_view.findViewById(R.id.date)).setText(_date);
+                    String _timeText = String.valueOf(_time / 60000) + ":" + String.valueOf(_time % 60000 / 1000) + "." + String.valueOf(_time % 1000);
+                    ((TextView)_view.findViewById(R.id.time)).setText(_timeText);
+
+                    linearLayoutStats.addView(_view);
+                } while (_cursor.moveToNext());
+            }
         }
+    }
 
+    public void buttonPressed(String buttonPressedParam) {
+        listener.onHighscoreButtonPressed(buttonPressedParam);
 
-
+        dismiss();
     }
 
 }

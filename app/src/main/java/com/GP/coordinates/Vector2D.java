@@ -21,6 +21,24 @@ public class Vector2D {
 
     }
 
+    public Vector2D(Position2D startPositionParam, float angleParam, float lengthParam) {
+        this.StartPosition = startPositionParam;
+        this.Length = lengthParam;
+        this.Angle = angleParam;
+
+        this.EndPosition = new Position2D(startPositionParam.X + lengthParam * (float) Math.cos(Math.toRadians(angleParam)), startPositionParam.Y + lengthParam * (float) Math.sin(Math.toRadians(angleParam)));
+    }
+
+    public Vector2D resolveCollision(Vector2D vectorParam) {
+
+        return new Vector2D(StartPosition, EndPosition);
+    }
+
+    public Vector2D multiplyScalar(float scalarParam) {
+
+        return new Vector2D(StartPosition, new Position2D(EndPosition.X * scalarParam, EndPosition.Y * scalarParam));
+    }
+
     /**
      * gives the distance from starting point to ending point of the vector on x-axis
      * @return distance on x-axis
