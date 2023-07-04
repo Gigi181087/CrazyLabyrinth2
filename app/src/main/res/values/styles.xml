@@ -16,4 +16,9 @@
         <item name="android:gravity">center</item>
     </style>
 
+    <style name="dialogStandardStyle">
+        <item name="background">@drawable/dialog_background</item>
+
+        </style>
+
 </resources>

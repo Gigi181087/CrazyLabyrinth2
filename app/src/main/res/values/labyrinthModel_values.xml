@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="ballBounce" format="float" type="dimen">0.75</item>
+</resources>

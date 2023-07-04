@@ -23,9 +23,9 @@ public class MQTTManager {
     private static final String pub_topic = "finished/X00";     // Anpassen
     private int qos = 0; // MQTT quality of service
     private String data;
-    private MemoryPersistence persistence = new MemoryPersistence();
-    private MqttClient client;
-    private String TAG = "MQTTManager";
+    private static MemoryPersistence persistence = new MemoryPersistence();
+    private static MqttClient client;
+    private static String TAG = "MQTTManager";
 
     private MQTTManager(Context context) {
         // Prevent from the reflection api.
@@ -51,13 +51,13 @@ public class MQTTManager {
     }
 
     // die IP-Adresse bitte in SharedPreferences und über Menü änderbar
-    public String Broker = "tcp://192.168.1.13:1883";
+    public String Broker = "tcp://192.168.1.4:1883";
 
     /**
      * Connect to broker and
      * @param brokerParam Broker to connect to
      */
-    public void connect(String brokerParam) {
+    public static void connect(String brokerParam) {
         try {
             clientId = MqttClient.generateClientId();
             client = new MqttClient(brokerParam, clientId, persistence);

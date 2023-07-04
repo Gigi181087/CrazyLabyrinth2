@@ -4,12 +4,10 @@ import android.app.Dialog;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -19,18 +17,17 @@ import androidx.fragment.app.DialogFragment;
 
 import com.GP.crazylabyrinth.R;
 import com.GP.database.CrazyLabyrinthDatabaseAccess;
-import com.GP.database.GameDataset;
 
 public class Highscore extends DialogFragment {
 
-    private Button buttonEasy;
-    private Button buttonMedium;
-    private Button buttonHard;
-    private Button buttonBack;
-    private CrazyLabyrinthDatabaseAccess database;
+    Button buttonEasy;
+    Button buttonMedium;
+    Button buttonHard;
+    Button buttonBack;
+    CrazyLabyrinthDatabaseAccess database;
 
     private LayoutInflater inflater;
-    private View view;
+    View view;
 
     private LinearLayout linearLayoutStats;
 
@@ -48,7 +45,7 @@ public class Highscore extends DialogFragment {
         try {
             listener = (listenerHighscoreButtons) contextParam;
         } catch (ClassCastException e) {
-            throw new ClassCastException(contextParam.toString() + " must implement OnButtonClickListener");
+            throw new ClassCastException(contextParam + " must implement OnButtonClickListener");
         }
     }
 
@@ -61,16 +58,6 @@ public class Highscore extends DialogFragment {
         builder.setView(view);
 
         database = new CrazyLabyrinthDatabaseAccess(getActivity());
-        long testvar = 0;
-        testvar = database.insertDataSet(new GameDataset("GIGI", 34875, "23.07.23", "EASY"));
-        Log.d("Database Usage", String.valueOf(testvar));
-        database.insertDataSet(new GameDataset("GIGI", 35875, "24.07.23", "EASY"));
-        database.insertDataSet(new GameDataset("GIGI", 32875, "25.07.23", "EASY"));
-        database.insertDataSet(new GameDataset("GIGI", 29875, "26.07.23", "EASY"));
-        database.insertDataSet(new GameDataset("GIGI", 39875, "27.07.23", "EASY"));
-        database.insertDataSet(new GameDataset("GIGI", 50875, "28.07.23", "EASY"));
-
-        database.debugPrintTable();
 
         linearLayoutStats = view.findViewById(R.id.statsList);
         buttonEasy = view.findViewById(R.id.buttonShowStatsEasy);
@@ -79,48 +66,25 @@ public class Highscore extends DialogFragment {
         buttonBack = view.findViewById(R.id.buttonBack);
 
         buttonEasy.setOnClickListener(view -> populateList(0));
-
         buttonMedium.setOnClickListener(view -> populateList(1));
-
         buttonHard.setOnClickListener(view -> populateList(2));
-
         buttonBack.setOnClickListener(view -> buttonPressed("BACK"));
-
-
 
         return builder.create();
     }
 
     private void populateList(int levelParam) {
-        String _filter = "";
+        String _filter;
         linearLayoutStats.removeAllViews();
 
         if(levelParam == 0) {
             _filter = "EASY";
-            buttonEasy.setSelected(true);
-            buttonEasy.refreshDrawableState();
-            buttonMedium.setSelected(false);
-            buttonMedium.refreshDrawableState();
-            buttonHard.setSelected(false);
-            buttonHard.refreshDrawableState();
 
         } else if(levelParam == 1) {
             _filter = "MEDIUM";
-            buttonEasy.setSelected(false);
-            buttonEasy.refreshDrawableState();
-            buttonMedium.setSelected(true);
-            buttonMedium.refreshDrawableState();
-            buttonHard.setSelected(false);
-            buttonHard.refreshDrawableState();
 
         } else if(levelParam == 2) {
             _filter = "HARD";
-            buttonEasy.setSelected(false);
-            buttonEasy.refreshDrawableState();
-            buttonMedium.setSelected(false);
-            buttonMedium.refreshDrawableState();
-            buttonHard.setSelected(true);
-            buttonHard.refreshDrawableState();
 
         } else {
             throw new IllegalArgumentException("Parameter of level is not supported!");

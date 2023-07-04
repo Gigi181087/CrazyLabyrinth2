@@ -61,7 +61,7 @@
             android:id="@+id/quit"
             android:text="QUIT"
             style="@style/ButtonStandardStyle"
-            android:layout_marginStart="50dp"/>
+            android:layout_marginStart="25dp"/>
 
     </LinearLayout>
 

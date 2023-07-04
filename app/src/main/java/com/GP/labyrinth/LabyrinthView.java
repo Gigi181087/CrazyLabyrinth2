@@ -63,6 +63,8 @@ public class LabyrinthView extends View {
             this.keyBitmap = Bitmap.createBitmap(labyrinthModelParam.Width*100, labyrinthModelParam.Height*100, Bitmap.Config.ARGB_8888);
             _canvas = new Canvas(this.keyBitmap);
             _canvas.drawBitmap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.key), 100, 100, false),  labyrinthModelParam.Key.X * 100, labyrinthModelParam.Key.Y * 100, null);
+        } else {
+            this.keyBitmap = null;
         }
 
         if(labyrinthModelParam.Level == LabyrinthModel.Difficulty.HARD) {

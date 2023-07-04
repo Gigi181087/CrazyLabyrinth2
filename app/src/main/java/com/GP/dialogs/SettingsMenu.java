@@ -5,11 +5,14 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.InputFilter;
+import android.text.Spanned;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,10 +20,11 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
 import com.GP.crazylabyrinth.R;
+import com.GP.mqtt.MQTTManager;
 
 public class SettingsMenu extends DialogFragment {
 
-    private EditText playerText;
+    EditText playerText;
     private EditText ipText;
     private Button connectButton;
     private Button vibratorButton;
@@ -47,19 +51,19 @@ public class SettingsMenu extends DialogFragment {
         try {
             listener = (ListenerSettings) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + " must implement OnButtonClickListener");
+            throw new ClassCastException(context + " must implement OnButtonClickListener");
         }
     }
 
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        androidx.appcompat.app.AlertDialog.Builder _builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder _builder = new AlertDialog.Builder(getActivity());
+
+        // build layout
         LayoutInflater _inflater = requireActivity().getLayoutInflater();
         View view = _inflater.inflate(R.layout.dialog_settings, null);
         _builder.setView(view);
-
-        // Finde den Button im Dialogfenster
         this.playerText = view.findViewById(R.id.playerNameTextView);
         this.ipText = view.findViewById(R.id.ipTextView);
         this.connectButton = view.findViewById(R.id.connectButton);
@@ -68,30 +72,58 @@ public class SettingsMenu extends DialogFragment {
         this.closeButton = view.findViewById(R.id.closeButton);
 
         // Get settings from system
-        this.sharedPreferences = getActivity().getSharedPreferences("CrazyLabyrinthSettings", Context.MODE_PRIVATE);
+        this.sharedPreferences = getActivity().getSharedPreferences(getResources().getString(R.string.sharedPreferencesName), Context.MODE_PRIVATE);
         this.editor = this.sharedPreferences.edit();
 
-        playerName = this.sharedPreferences.getString("Playername", "PLAYER");
-        ip = this.sharedPreferences.getString("IP", "127.0.0.1");
-        vibrator = this.sharedPreferences.getBoolean("Vibrator", true);
-        sound = this.sharedPreferences.getBoolean("Sound", true);
+        playerName = this.sharedPreferences.getString(getResources().getString(R.string.playerName), getResources().getString(R.string.playerNameDefaultValue));
+        ip = this.sharedPreferences.getString(getActivity().getResources().getString(R.string.internetProtocol), getResources().getString(R.string.internetProtocolDefaultAddress));
+        vibrator = this.sharedPreferences.getBoolean(getResources().getString(R.string.vibratorUsed), getResources().getBoolean(R.bool.vibratorUsedDefaultValue));
+        sound = this.sharedPreferences.getBoolean(getResources().getString(R.string.soundUsed), getResources().getBoolean(R.bool.soundUsedDefaultValue));
+
+        connectButton.setOnClickListener(_lambdaView -> MQTTManager.connect(ip));
 
         this.playerText.setText(playerName);
         this.ipText.setText(ip);
 
-        if(sound) {
-            this.soundButton.setText("SOUND ON");
-        } else {
-            this.soundButton.setText("SOUND OFF");
-        }
+        InputFilter _nameFilter = new InputFilter() {
+            @Override
+            public CharSequence filter(CharSequence charSequenceParam, int startParam, int endParam, Spanned spannedParam, int sstartParam, int dendParam) {
+                StringBuilder _returnValue = new StringBuilder();
 
-        if(vibrator) {
-            this.vibratorButton.setText("VIBRATOR ON");
-        } else {
-            this.vibratorButton.setText("VIBRATOR OFF");
-        }
+                for(int i = startParam; i < endParam; i++) {
+                    if(i < 14) {
+                        char _currentChar = charSequenceParam.charAt(i);
 
-        this.ipText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                        if ((int) _currentChar >= (int) 'a' && (int) _currentChar <= (int) 'z') {
+                            _currentChar = (char) (_currentChar - 32);
+                            _returnValue.append(_currentChar);
+
+                        } else if ((int) _currentChar >= (int) '0' && (int) _currentChar <= (int) '9') {
+                            _returnValue.append(_currentChar);
+
+                        } else if ((int) _currentChar >= (int) 'A' && (int) _currentChar <= (int) 'Z') {
+                            _returnValue.append(_currentChar);
+                        }
+                    }
+                }
+
+                return _returnValue;
+            }
+        };
+
+        
+
+        // Created by chatGPT
+        this.playerText.setFilters(new InputFilter[] { _nameFilter });
+        this.playerText.setOnFocusChangeListener((viewParam, hasFocusParam)  -> {
+            if (!hasFocusParam) {
+                this.playerName = this.playerText.getText().toString();
+            }
+        });
+        this.soundButton.setText(sharedPreferences.getBoolean(getResources().getString(R.string.soundUsed), getResources().getBoolean(R.bool.soundUsedDefaultValue)) ? getResources().getString(R.string.soundOn) : getResources().getString(R.string.soundOff));
+        this.vibratorButton.setText(sharedPreferences.getBoolean(getResources().getString(R.string.vibratorUsed), getResources().getBoolean(R.bool.vibratorUsedDefaultValue)) ? getResources().getString(R.string.vibratorOn) : getResources().getString(R.string.vibratorOff));
+
+        /*this.ipText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
                 if(!b) {
@@ -125,37 +157,28 @@ public class SettingsMenu extends DialogFragment {
                     }
                 }
             }
-        });
+        });*/
 
         this.soundButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View view) {
+                boolean _sound = !sharedPreferences.getBoolean(getResources().getString(R.string.soundUsed), getResources().getBoolean(R.bool.soundUsedDefaultValue));
+                soundButton.setText(_sound ? getResources().getString(R.string.soundOn) : getResources().getString(R.string.soundOff));
+                editor.putBoolean(getResources().getString(R.string.soundUsed), _sound);
 
-                if(sound) {
-                    soundButton.setText("SOUND OFF");
-                    sound = false;
-
-                } else {
-                    soundButton.setText("SOUND ON");
-                    sound = true;
-                }
+                editor.apply();
             }
         });
 
         this.vibratorButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                boolean _vibrator = !sharedPreferences.getBoolean(getResources().getString(R.string.vibratorUsed), getResources().getBoolean(R.bool.vibratorUsedDefaultValue));
+                vibratorButton.setText(_vibrator ? getResources().getString(R.string.vibratorOn) : getResources().getString(R.string.vibratorOff));
+                editor.putBoolean(getResources().getString(R.string.vibratorUsed), _vibrator);
 
-                if(vibrator) {
-                    vibratorButton.setText("VIBRATOR OFF");
-                    vibrator = false;
-
-                } else {
-                    vibratorButton.setText("VIBRATOR ON");
-                    vibrator = true;
-                }
-                editor.putBoolean("Vibrator", vibrator);
+                editor.apply();
             }
         });
 
@@ -163,16 +186,13 @@ public class SettingsMenu extends DialogFragment {
             @Override
             public void onClick(View v) {
 
-                editor.putString("Playername", playerName);
-                editor.putString("IP", ip);
-                editor.putBoolean("Sound", sound);
-                editor.putBoolean("Vibrator", vibrator);
+                editor.putString(getResources().getString(R.string.playerName), playerText.getText().toString());
+                editor.putString(getResources().getString(R.string.internetProtocol), ipText.getText().toString());
+                editor.apply();
 
                 if(listener != null) {
                     listener.onSettingsButtonPressed(true);
                 }
-
-                editor.apply();
 
                 dismiss();
             }

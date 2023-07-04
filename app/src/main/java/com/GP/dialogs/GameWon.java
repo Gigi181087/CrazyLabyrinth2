@@ -1,6 +1,5 @@
 package com.GP.dialogs;
 
-import static android.support.v4.widget.EdgeEffectCompatIcs.finish;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -17,33 +16,36 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
 import com.GP.crazylabyrinth.R;
-import com.GP.database.CrazyLabyrinthDatabaseAccess;
-
-import java.util.Date;
 
 public class GameWon extends DialogFragment {
 
     //layout elements
     private LayoutInflater inflater;
     private View view;
-    private TextView name;
-    private TextView time;
-    private TextView level;
+    private TextView textViewName;
+    private TextView textViewTime;
+    private TextView textViewLevel;
     private Button buttonQuit;
     private Button buttonNewGame;
 
-    // shared preference elements
-    private SharedPreferences sharedPreferences;
+    String name;
+    int time;
+    String level;
 
-    // database elements
-    private CrazyLabyrinthDatabaseAccess database;
-    private Date date;
+
+
 
     // listener
     private ListenerGameWonButtons listener;
 
     public interface ListenerGameWonButtons {
-        void onGameWonButtonPressed(String buttonPressedParam);
+        void onGameWonButtonPressed(String buttonPressed);
+    }
+
+    public GameWon(String nameParam, int timeParam,  String levelParam) {
+        name = nameParam;
+        time = timeParam;
+        level = levelParam;
     }
 
     @Override
@@ -54,7 +56,7 @@ public class GameWon extends DialogFragment {
         try {
             listener = (ListenerGameWonButtons) contextParam;
         } catch (ClassCastException e) {
-            throw new ClassCastException(contextParam.toString() + " must implement OnButtonClickListener");
+            throw new ClassCastException(contextParam + " must implement OnButtonClickListener");
         }
     }
 
@@ -65,22 +67,33 @@ public class GameWon extends DialogFragment {
 
         //build layout
         this.inflater = requireActivity().getLayoutInflater();
-        this.view = inflater.inflate(R.layout.dialog_highscore, null);
+        this.view = inflater.inflate(R.layout.dialog_gamewon, null);
         builder.setView(view);
-        this.name = view.findViewById(R.id.name);
-        this.time = view.findViewById(R.id.time);
-        this.level = view.findViewById(R.id.level);
+        this.textViewName = view.findViewById(R.id.name);
+        this.textViewTime = view.findViewById(R.id.time);
+        this.textViewLevel = view.findViewById(R.id.level);
         this.buttonNewGame = view.findViewById(R.id.newGame);
         this.buttonQuit = view.findViewById(R.id.quit);
 
         // get shared preferences
-        SharedPreferences _sharedPreferences;
-        _sharedPreferences = getActivity().getSharedPreferences(getActivity().getString(R.string.sharedPreferences_name), Context.MODE_PRIVATE);
-        String _name = _sharedPreferences.getString(getActivity().getString(R.string.playerfieldname), getActivity().getString(R.string.playerDefaultValue));
+        textViewName.setText(name);
+        textViewLevel.setText(level);
+        textViewTime.setText(String.format("%02d:%02d.%03d", time / 60000, time % 60000 / 1000, time % 1000));
 
         // add listeners to buttons
-        this.buttonQuit.setOnClickListener(view -> finish());
+        this.buttonQuit.setOnClickListener(view -> {
+            dismiss();
+            NotifyButtonPressed("QUIT");
+        });
+        this.buttonNewGame.setOnClickListener(view -> {
+            dismiss();
+            NotifyButtonPressed("NEW GAME");
+        });
 
-}
+        return builder.create();
+    }
 
+    private void NotifyButtonPressed(String buttonParam) {
+        listener.onGameWonButtonPressed(buttonParam);
+    }
 }

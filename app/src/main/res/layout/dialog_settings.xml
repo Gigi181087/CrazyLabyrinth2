@@ -13,23 +13,24 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-                android:layout_marginBottom="50dp"
+        android:layout_marginBottom="50dp"
         android:layout_marginTop="50dp">
 
 
         <EditText
-                android:id="@+id/playerNameTextView"
-                android:layout_width="350dp"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:background="@drawable/text_roundededges"
-                android:fontFamily="@font/gamefont"
-                android:padding="15dp"
+            android:id="@+id/playerNameTextView"
+            android:layout_width="350dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:background="@drawable/text_roundededges"
+            android:fontFamily="@font/gamefont"
+            android:padding="15dp"
             android:layout_centerHorizontal="true"
-
-                android:text="PLAYER"
-                android:textColor="#FFFF00"
-                android:textSize="20sp"/>
+            android:inputType="text|textNoSuggestions"
+            android:singleLine="true"
+            android:text="PLAYER"
+            android:textColor="#FFFF00"
+            android:textSize="20sp"/>
 
 
     </RelativeLayout>
@@ -51,6 +52,8 @@
             android:fontFamily="@font/gamefont"
             android:textSize="20sp"
             android:textColor="#FFFF00"
+            android:inputType="text|textNoSuggestions"
+            android:singleLine="true"
             android:layout_marginBottom="15dp"
 
             android:padding="15dp"/>

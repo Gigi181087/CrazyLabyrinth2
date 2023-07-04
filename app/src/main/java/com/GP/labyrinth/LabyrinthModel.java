@@ -1,30 +1,44 @@
 package com.GP.labyrinth;
 
+import android.content.Context;
+import android.util.Log;
 import androidx.annotation.NonNull;
 
-// import coordinates package
 import com.GP.coordinates.Vector2D;
 import com.GP.coordinates.Position2D;
 import com.GP.coordinates.Grid;
-
-// import labyrinth package
-import com.GP.labyrinth.Ball;
-import com.GP.labyrinth.LabyrinthModel;
-import com.GP.labyrinth.LabyrinthView;
-import com.GP.mqtt.MQTTManager;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class LabyrinthModel {
-    public interface LabyrinthEventListener {
-        void OnGameWon();
-        void OnWallTouched(float param);
-        void OnKeyCollected();
+
+    private final LabyrinthListener listener;
+
+    /**
+     * Event interface for labyrinth model
+     */
+    public interface LabyrinthListener {
+
+        /**
+         * Event triggered when the game is won
+         */
+        void onGameWon();
+
+        /**
+         * Event triggered when ball touches a wall
+         * @param param speed of the ball on impact
+         */
+        void onWallTouched(float param);
+
+        /**
+         * Event triggered when the ball collects the key
+         */
+        void onKeyCollected();
     }
 
-    private List<LabyrinthEventListener> eventListeners;
+    final Context context;
     public int Height;
     public int Width;
 
@@ -38,23 +52,59 @@ public class LabyrinthModel {
     public Ball Ball;
     public Difficulty Level;
 
+    /**
+     * Holds the different difficulty levels
+     */
     public enum Difficulty {
         DEMO(9),
         EASY(0),
         MEDIUM(1),
         HARD(2);
 
-        private int intValue;
+        private final int intValue;
 
-        private Difficulty(int valueParam) {
+        /**
+         * Constructor
+         * @param valueParam integer representation of enum to be created
+         */
+        Difficulty(int valueParam) {
             this.intValue = valueParam;
         }
 
+
+        /**
+         * Gives integer representation of an enum value
+         * @return integer representation
+         */
         public int getValue() {
 
             return intValue;
         }
 
+        /**
+         * Gives string representation of an enum value
+         * @return string representation
+         */
+        public String getString() {
+            switch(intValue) {
+
+                case 0:
+                    return "EASY";
+                case 1:
+                    return "MEDIUM";
+                case 2:
+                    return "HARD";
+
+                default:
+                    return "DEMO";
+            }
+        }
+
+        /**
+         * Creates Enum from integer
+         * @param intValue integer representation of enum
+         * @return enum value according to given integer
+         */
         public static Difficulty fromInt(int intValue) {
             for (Difficulty value : Difficulty.values()) {
                 if (value.getValue() == intValue) {
@@ -65,58 +115,78 @@ public class LabyrinthModel {
         }
     }
 
-    public enum EventTypes {
-        Reset,
-        GameWon,
-        WallTouched
+    /**
+     * Constructor
+     * @param contextParam context
+     */
+    public LabyrinthModel(Context contextParam) {
+        this.context = contextParam;
+        this.listener = (LabyrinthListener) contextParam;
     }
 
-    public LabyrinthModel(int WidthParam, int HeightParam, Difficulty difficultyParam) {
-        eventListeners = new ArrayList<>();
-        this.Width = WidthParam;
-        this.Height = HeightParam;
+    /**
+     * Creates a labyrinth with given parameters
+      * @param widthParam number of horizontal passages
+     * @param heightParam number of vertical passages
+     * @param difficultyParam use Difficulty.EASY, Difficulty.MEDIUM or Difficulty.HARD
+     */
+    public void create(int widthParam, int heightParam, Difficulty difficultyParam) {
+        this.Width = widthParam;
+        this.Height = heightParam;
         this.Level = difficultyParam;
-        LabyrinthCreator.Create(this);
+        boolean _success = false;
+
+        while(!_success) {
+            _success =  LabyrinthCreator.Create(this);
+        }
         this.Ball = new Ball((float) (this.Start.X + 0.5f), (float) (this.Start.Y + 0.5f));
+
+        if(difficultyParam.getValue() > Difficulty.EASY.getValue()) {
+            this.Ball.HasKey = false;
+        }
     }
 
+    /**
+     * Updates the ball position in the labyrinth
+     * @param xForceParam new gravity forces on x-axis
+     * @param yForceParam new gravity forces on y-axis
+     */
     public void updateBallPosition(float xForceParam, float yForceParam) {
         BallMover.updateBallPosition(this, xForceParam, yForceParam);
     }
 
 
-    public void registerEventListener(LabyrinthEventListener listenerParam) {
-        eventListeners.add(listenerParam);
-    }
+    /*
+     * LabyrinthModel Events
+     */
 
-    public void removeEventListener(LabyrinthEventListener listenerParam) {
-        eventListeners.remove(listenerParam);
-    }
+    /**
+     * Event is published, when the game is won
+     */
     private void NotifyGameWon() {
-
-        for (LabyrinthEventListener listener : eventListeners) {
-            listener.OnGameWon();
-        }
+        Log.d("LabyrinthModel", "Event GameWon triggered!");
+        listener.onGameWon();
     }
 
     /**
-     * Event when ball touches wall.
-     * @param speedParam
+     * Event is published when the ball touches any wall
+     * @param speedParam speed of the ball when hitting the wall
      */
-    private void NotifyWallTouched(@NonNull float speedParam) {
-
-        for (LabyrinthEventListener listener : eventListeners) {
-            listener.OnWallTouched(speedParam);
-        }
+    private void NotifyWallTouched(float speedParam) {
+        listener.onWallTouched(speedParam);
     }
 
+    /**
+     * Event is published when the ball collects the key on difficulty medium or hard
+     */
     private void NotifyKeyCollected() {
-
-        for (LabyrinthEventListener listener : eventListeners) {
-            listener.OnKeyCollected();
-        }
+        Log.d("LabyrinthModel", "Event KeyCollected triggered!");
+        listener.onKeyCollected();
     }
 
+    /**
+     * Simple class which holds the configuration of a labyrinthcell
+     */
     public class LabyrinthCell {
         public boolean WayUp;
         public boolean WayRight;
@@ -126,9 +196,9 @@ public class LabyrinthModel {
     }
 
 
-
-
-
+    /**
+     * Static class responsible to create a randomized labyrinth with determined sizes
+     */
     private static class LabyrinthCreator {
         private static boolean[][] visited;
         private static Grid cursor;
@@ -140,7 +210,7 @@ public class LabyrinthModel {
          *
          * @param labyrinthParam The LabyrinthModel used to create the labyrinth.
          */
-        private static void Create(@NonNull LabyrinthModel labyrinthParam) {
+        private static boolean Create(@NonNull LabyrinthModel labyrinthParam) {
             labyrinth = labyrinthParam;
             visited = new boolean[labyrinthParam.Width][];
             cursor = new Grid(0, 0);
@@ -171,11 +241,13 @@ public class LabyrinthModel {
 
             // Draw way from ending point to starting point
             do {
-                if(NextStep() == false) {
+
+                if(!NextStep()) {
                     StepBack();
-                };
+                }
+
                 if(cursor.Equals(labyrinth.End)) {
-                    //throw new Exception();
+                    return false;
                 }
             } while(steps.size() < labyrinthParam.Width * labyrinthParam.Height * 0.25);
 
@@ -190,7 +262,7 @@ public class LabyrinthModel {
 
                 do {
 
-                    if(NextStep() == false) {
+                    if(!NextStep()) {
 
                         if(_keyWayLength > 0) {
                             _keyWayLength--;
@@ -202,7 +274,7 @@ public class LabyrinthModel {
                     }
 
                     if(cursor.Equals(labyrinth.End)) {
-                        //throw new LabyrinthCreatorException();
+                        return false;
                     }
                 } while (_keyWayLength < labyrinthParam.Width * labyrinthParam.Height * 0.1);
 
@@ -213,9 +285,9 @@ public class LabyrinthModel {
             /*
              * Fill the rest of the empty cells
              */
-            while(cursor.Equals(labyrinthParam.End) == false) {
+            while(!cursor.Equals(labyrinthParam.End)) {
 
-                if (NextStep() == false) {
+                if (!NextStep()) {
                     StepBack();
                 }
             }
@@ -226,35 +298,41 @@ public class LabyrinthModel {
             steps = null;
 
             System.gc();
+
+            return true;
         }
 
+        /**
+         * Moves the cursor to the next step if possible
+         * @return true on success, otherwise false
+         */
         private static boolean NextStep() {
             List<Integer[]> directions = new ArrayList<>();
 
             if(cursor.Y > 0) {
 
-                if (visited[cursor.X][cursor.Y - 1] == false) {
+                if (!visited[cursor.X][cursor.Y - 1]) {
                     directions.add(new Integer[] {0, -1, 0});
                 }
 
             }
             if(cursor.X < (labyrinth.Width - 1)) {
 
-                if (visited[cursor.X + 1][cursor.Y] == false) {
+                if (!visited[cursor.X + 1][cursor.Y]) {
                     directions.add(new Integer[] {1, 0, 1});
                 }
 
             }
             if(cursor.Y < (labyrinth.Height - 1)) {
 
-                if(visited[cursor.X][cursor.Y + 1] == false) {
+                if(!visited[cursor.X][cursor.Y + 1]) {
                     directions.add(new Integer[] {0, 1, 2});
                 }
 
             }
             if(cursor.X > 0) {
 
-                if(visited[cursor.X - 1][cursor.Y] == false) {
+                if(!visited[cursor.X - 1][cursor.Y]) {
                     directions.add(new Integer[]{-1, 0, 3});
                 }
             }
@@ -303,262 +381,111 @@ public class LabyrinthModel {
             }
         }
 
+        /**
+         * Moves the cursor to the previous cell
+         */
         private static void StepBack() {
             cursor.Clone(steps.get(steps.size() - 1));
             steps.remove(steps.size() - 1);
         }
     }
 
+
+    /**
+     * Static class which is used to simulate ball movement in a labyrinth
+     */
     private static class BallMover {
-
-        // Created by ChatGPT and unchanged
-
-
-
         private static LabyrinthModel labyrinth;
         private static Grid startGrid;
-
         private static Vector2D movementVector;
+
+        /**
+         * Simulates ball movement through labyrinth
+         * @param labyrinthParam labyrinth on whcih the movement is performed
+         * @param xForceParam new gravity forces on x-axis
+         * @param yForceParam new gravity forces on y-axis
+         */
         private static void updateBallPosition(@NonNull LabyrinthModel labyrinthParam, float xForceParam, float yForceParam) {
             labyrinth = labyrinthParam;
-
-
-            // Create movement vector from accelerator forces
-            startGrid = new Grid((int)labyrinth.Ball.Position.X, (int)labyrinth.Ball.Position.Y);
 
             long _timeNow = System.currentTimeMillis();
             float _timeElapsed = _timeNow - labyrinth.Ball.LastUpdated;
 
+            // Create movement vector from accelerator forces
+            startGrid = new Grid((int)labyrinth.Ball.Position.X, (int)labyrinth.Ball.Position.Y);
+
+
+
             // calculate new position
-            float _newX = (float)(labyrinth.Ball.Position.X + (labyrinth.Ball.SpeedX * 0.8 * _timeElapsed) / 1000);
-            float _newY = (float)(labyrinth.Ball.Position.Y + (labyrinth.Ball.SpeedY * 0.8 * _timeElapsed) / 1000);
+            float _newX = (float)(labyrinth.Ball.Position.X + (labyrinth.Ball.SpeedX * 0.95f * _timeElapsed) / 1000);
+            float _newY = (float)(labyrinth.Ball.Position.Y + (labyrinth.Ball.SpeedY * 0.95f * _timeElapsed) / 1000);
+            movementVector = new Vector2D(labyrinth.Ball.Position, new Position2D(_newX, _newY));
 
             // calculate new speed
             labyrinth.Ball.SpeedX += ((labyrinth.Ball.ForceX * _timeElapsed) / 1000);
             labyrinth.Ball.SpeedY += ((labyrinth.Ball.ForceY * _timeElapsed) / 1000);
-
             labyrinth.Ball.ForceX = xForceParam;
             labyrinth.Ball.ForceY = yForceParam;
-
             labyrinth.Ball.LastUpdated = _timeNow;
 
-            movementVector = new Vector2D(labyrinth.Ball.Position, new Position2D(_newX, _newY));
-
-            /*
-             * Check if vector collides with any wall
-             */
-
-            // Check top wall
             resolveMovement();
         }
 
+        /**
+         * Resolves collisions with wall during simulation
+         */
         private static void resolveMovement() {
             startGrid = new Grid((int)movementVector.StartPosition.X, (int)movementVector.StartPosition.Y);
             LabyrinthCell _cell = labyrinth.Cells[(int)labyrinth.Ball.Position.X][(int)labyrinth.Ball.Position.Y];
             labyrinth.Ball.Position = movementVector.EndPosition;
-             /*
-            // Collision
-            if(!this.checkWithinBounds()) {
 
-                // Create position of the ball edges
-                Position2D topEdge = this.labyrinth.Ball.Position.add(0, -this.labyrinth.BallSize);
-                Position2D _rightEdge = this.labyrinth.Ball.Position.add(labyrinth.BallSize, 0);
-                Position2D bottomEdge = this.labyrinth.Ball.Position.add(0, labyrinth.BallSize);
-                Position2D leftEdge = this.labyrinth.Ball.Position.add(labyrinth.BallSize, 0);
-
-                // Create position of the corners
-                Position2D topRightCorner = new Position2D((float)startGrid.X, (float)startGrid.Y).add(1 - this.labyrinth.WallSize, this.labyrinth.WallSize);
-                Position2D _bottomRightCorner = new Position2D((float)startGrid.X, (float)startGrid.Y).add(1 - this.labyrinth.WallSize, 1 - this.labyrinth.WallSize);
-                Position2D bottomLeftCorner = new Position2D((float)startGrid.X, (float)startGrid.Y).add(this.labyrinth.WallSize, 1 - this.labyrinth.WallSize);
-                Position2D topLeftCorner = new Position2D((float)startGrid.X, (float)startGrid.Y).add(this.labyrinth.WallSize, this.labyrinth.WallSize);
-
-                // Check top right corner
-                if(checkVectorBetweenPositions(new Vector2D(_rightEdge, movementVector.Length, movementVector.Angle), new Position2D(startGrid.X, startGrid.Y).add(0.5f, 0), topRightCorner)) { // Check top side of cell
-
-                    if(!_cell.WayUp) {  // Case there is a wall
-                        float _scalar = (topEdge.Y - (startGrid.Y + labyrinth.WallSize)) / movementVector.getDistanceY();
-                        Vector2D _topWallVector = new Vector2D(new Position2D(startGrid.X + 0.5f, startGrid.Y + labyrinth.WallSize), topRightCorner);
-
-                        this.movementVector = this.movementVector.resolveCollision(_topWallVector).multiplyScalar(0.8f);
-
-                        this.resolveMovement();
-
-                        return;
-
-                    } else { // Case there is no wall
-
-                        // Check if ball touches the corner
-                        if(checkVectorBetweenPositions(movementVector, new Position2D(startGrid.X, startGrid.Y).add(0.5f, -labyrinth.WallSize), new Position2D(startGrid.X, startGrid.Y).add(1 - labyrinth.WallSize, -labyrinth.WallSize))) {
-                            this.moveBallToAxisY(this.startGrid.Y - this.labyrinth.WallSize);
-                            this.resolveMovement();
-
-                        }
-
-
-
-                        // Check if ball bounces of the corner
-                        if(this.movementVector.Angle > this.new Vector2D(this.labyrinth.Ball.XPosition + this.labyrinth.BallSize, this.labyrinth.Ball.YPosition, this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y + this.labyrinth.WallSize).Angle) {
-                            this.movementVector.resolveCollision(this.new Vector2D(this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y + this.labyrinth.WallSize,this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y - this.labyrinth.WallSize));
-                            this.resolveMovement();
-
-                        // Move ball to the next cell
-                        } else {
-                            this.moveBallToAxisY(this.startGrid.Y - this.labyrinth.WallSize);
-                            this.resolveMovement();
-                        }
-                    }
-
-                // Check bottom right corner
-                } else if (this.movementVector.Angle < this.new Vector2D(this.labyrinth.Ball.XPosition, this.labyrinth.Ball.YPosition + this.labyrinth.BallSize, this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y + this.labyrinth.WallSize).Angle) {
-
-                    // Case that a wall is on the right side
-                    if(!_cell.WayRight) {
-                        this.movementVector.resolveCollision(this.new Vector2D(this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y + 1 - this.labyrinth.WallSize,this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y + this.labyrinth.WallSize));
-                        this.resolveMovement();
-
-                        return;
-
-                    } else {
-
-                        // Check if ball bounces of the corners
-                        // Top corner
-                        if(this.movementVector.Angle < this.new Vector2D(this.labyrinth.Ball.XPosition + this.labyrinth.BallSize, this.labyrinth.Ball.YPosition, this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y + this.labyrinth.WallSize).Angle) {
-                            this.movementVector.resolveCollision(this.new Vector2D(this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y + this.labyrinth.WallSize, this.startGrid.X + 1 - this.labyrinth.WallSize, this.startGrid.Y - this.labyrinth.WallSize));
-                            this.resolveMovement();
-
-                        } else if
-                            // Move ball to the next cell
-                        } else {
-                            this.moveBallToAxisY(this.startGrid.Y - this.labyrinth.WallSize);
-                            this.resolveMovement();
-                        }
-                }
-
-            // No collision
-            } else {
-                this.labyrinth.Ball.Position.X = this.movementVector.EndPosition.X;
-                this.labyrinth.Ball.Position.Y = this.movementVector.EndPosition.Y;
-            }
-            */
-            // Flags to check corner
-            boolean _cornerLeft = false;
-            boolean _cornerTop = false;
-            boolean _cornerBottom = false;
-            boolean _cornerRight = false;
 
             // Check left wall
             if(labyrinth.Ball.Position.X <= (startGrid.X + 0.30f)) {
 
-                if(_cell.WayLeft == false) {
+                if(!_cell.WayLeft) {
                     labyrinth.NotifyWallTouched(labyrinth.Ball.SpeedX);
-                    labyrinth.Ball.SpeedX *= (-0.5);
+                    labyrinth.Ball.SpeedX *= (-0.5f);
                     labyrinth.Ball.Position.X = startGrid.X + 0.30f;
 
-                } else {
-                    _cornerLeft = true;
                 }
 
                 // Check right wall
             } else if(labyrinth.Ball.Position.X > startGrid.X + 0.70f) {
 
-                if(_cell.WayRight == false) {
+                if(!_cell.WayRight) {
                     labyrinth.NotifyWallTouched(labyrinth.Ball.SpeedX);
-                    labyrinth.Ball.SpeedX *= (-0.5);
+                    labyrinth.Ball.SpeedX *= -0.5f;
                     labyrinth.Ball.Position.X = startGrid.X + 0.70f;
                 }
             }
 
             // Check top wall
-            if(labyrinth.Ball.Position.Y <= (startGrid.Y + 0.30f)) {
+            if(labyrinth.Ball.Position.Y <= (startGrid.Y + labyrinth.WallSize + labyrinth.BallSize)) {
 
-                if(_cell.WayUp == false) {
+                if(!_cell.WayUp) {
                     labyrinth.NotifyWallTouched(labyrinth.Ball.SpeedY);
-                    labyrinth.Ball.SpeedY *= (-0.5);
+                    labyrinth.Ball.SpeedY *= (-0.5f);
                     labyrinth.Ball.Position.Y = startGrid.Y + 0.30f;
                 }
 
                 // Check bottom wall
             } else if(labyrinth.Ball.Position.Y >= (startGrid.Y + 0.70f)) {
 
-                if(_cell.WayDown == false) {
+                if(!_cell.WayDown) {
                     labyrinth.NotifyWallTouched(labyrinth.Ball.SpeedY);
-                    labyrinth.Ball.SpeedY *= (-0.5);
+                    labyrinth.Ball.SpeedY *= (-0.5f);
                     labyrinth.Ball.Position.Y = startGrid.Y + 0.70f;
                 }
             }
 
-            if(new Grid((int)labyrinth.Ball.Position.X, (int)labyrinth.Ball.Position.Y).Equals(labyrinth.Key)) {
+            if(new Grid((int)labyrinth.Ball.Position.X, (int)labyrinth.Ball.Position.Y).Equals(labyrinth.Key) && !labyrinth.Ball.HasKey) {
                 labyrinth.NotifyKeyCollected();
                 labyrinth.Ball.HasKey = true;
             } else if(new Grid((int)labyrinth.Ball.Position.X, (int)labyrinth.Ball.Position.Y).Equals(labyrinth.End) && labyrinth.Ball.HasKey) {
                 labyrinth.NotifyGameWon();
             }
         }
-
-        private void setPosition() {
-
-
-        }
-
-        /**
-         * Tests if movement vector is inside cell bounds
-         * @return true, if vector is within square bounds completely, otherwise false
-         */
-        private static boolean checkWithinBounds() {
-            Grid _grid = new Grid((int)labyrinth.Ball.Position.X, (int)labyrinth.Ball.Position.Y);
-
-            if(movementVector.EndPosition.X > _grid.X + 1 - labyrinth.WallSize - labyrinth.BallSize) {
-
-                return false;
-            }
-
-            if(movementVector.EndPosition.X < _grid.X + labyrinth.WallSize + labyrinth.BallSize) {
-
-                return false;
-            }
-
-            if(movementVector.EndPosition.Y > _grid.Y + 1 - labyrinth.WallSize - labyrinth.BallSize) {
-
-                return false;
-            }
-
-            if(movementVector.EndPosition.Y < _grid.Y + labyrinth.WallSize + labyrinth.BallSize) {
-
-                return false;
-            }
-
-            return true;
-        }
-
-        public boolean checkVectorBetweenPositions(Vector2D vectorParam, Position2D firstPositionParam, Position2D secondPositionParam) {
-            Vector2D vectorToFirst = new Vector2D(vectorParam.StartPosition, firstPositionParam);
-            Vector2D vectorToSecond = new Vector2D(vectorParam.StartPosition, secondPositionParam);
-
-            if(vectorParam.Angle < vectorToFirst.Angle) {
-
-                return false;
-            }
-
-            if(vectorParam.Angle > vectorToSecond.Angle) {
-
-                return false;
-            }
-
-            return true;
-        }
-
-        /*
-        private boolean IsInCorner() {
-            // Überprüfe, ob die Kugel innerhalb des Nähebereichs zur Ecke liegt
-
-            if (Math.abs(ballX - cornerX) <= proximityThreshold && Math.abs(ballY - cornerY) <= proximityThreshold) {
-                return true; // Die Kugel ist in der Nähe der Ecke
-            } else {
-                return false; // Die Kugel ist nicht in der Nähe der Ecke
-            }
-        }
-
-         */
     }
 }
 

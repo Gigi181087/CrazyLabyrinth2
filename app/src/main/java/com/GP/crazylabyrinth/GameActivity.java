@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
@@ -23,17 +22,21 @@ import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Button;
 
+import com.GP.database.CrazyLabyrinthDatabaseAccess;
+import com.GP.database.GameDataset;
+import com.GP.dialogs.GameMenu;
+import com.GP.dialogs.GameWon;
 import com.GP.dialogs.NewGameMenu;
 import com.GP.dialogs.SettingsMenu;
 import com.GP.labyrinth.LabyrinthModel;
 import com.GP.labyrinth.LabyrinthView;
-import com.GP.labyrinth.Ball;
 import com.GP.mqtt.MQTTManager;
-import com.google.android.material.internal.ContextUtils;
 
-public class GameActivity extends AppCompatActivity implements SensorEventListener, LabyrinthModel.LabyrinthEventListener, MQTTManager.MQTTEventListener, SettingsMenu.ListenerSettings {
+import java.time.LocalDate;
+
+public class GameActivity extends AppCompatActivity implements SensorEventListener, LabyrinthModel.LabyrinthListener, MQTTManager.MQTTEventListener, SettingsMenu.ListenerSettings, GameMenu.ListenerGameMenuButton, GameWon.ListenerGameWonButtons, NewGameMenu.listenerNewGameButtons {
     private SharedPreferences sharedPreferences;
-    private boolean vibratorUsed;
+    private volatile boolean vibratorUsed;
     private boolean remoteUsed;
     private boolean soundUsed;
 
@@ -52,6 +55,7 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
         ACCELERATOR
     }
 
+    int time = 0;
     private controls userControls;
 
     //private final Display display;
@@ -60,45 +64,59 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
     private LabyrinthView labyrinthView;
     private SensorManager _sensorManager;
     private SensorEventListener sensorListener;
-    private LabyrinthModel.LabyrinthEventListener labyrinthListener;
     private Sensor _accelerometer;
     private double xForceCalibrate;
     private double yForceCalibrate;
     private Vibrator vibrator;
 
+    DisplayMetrics _displayMetrics;
+    LabyrinthModel.Difficulty difficulty;
+    Button menuButton;
+    GameMenu gameMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceStateParam) {
         super.onCreate(savedInstanceStateParam);
 
-        LabyrinthModel.Difficulty _difficulty = LabyrinthModel.Difficulty.fromInt(getIntent().getIntExtra("level", 2));
         // Force display to not rotate and disable ugly action bar
         this.vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         getSupportActionBar().hide();
 
         // Handle system services
-        DisplayMetrics _displayMetrics = new DisplayMetrics();
+        _displayMetrics = new DisplayMetrics();
         WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         windowManager.getDefaultDisplay().getMetrics(_displayMetrics);
-        _sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        _accelerometer = _sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        _sensorManager.registerListener(this, _accelerometer, SensorManager.SENSOR_DELAY_GAME);
-
-        // Initialize Labyrinth
-        labyrinth = new LabyrinthModel(10, 14, _difficulty);
-        labyrinth.registerEventListener(this);
-
-        // Handle activity view
         setContentView(R.layout.activity_game);
         this.labyrinthView = (LabyrinthView) findViewById(R.id.labyrinth_view);
+        _sensorManager = (SensorManager) getApplicationContext().getSystemService(SENSOR_SERVICE);
+        _accelerometer = _sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
+
+
+        // Initialize Labyrinth
+
+        // Handle activity view
+
+        gameMenu = new GameMenu();
+
+        menuButton = (Button)findViewById(R.id.menuButton);
+        menuButton.setOnClickListener(view -> showGameMenu());
+
+        this.userControls = controls.ACCELERATOR;
+
+        startGame(getIntent().getIntExtra("level", 2));
+        getSettings();
+    }
+
+    private void startGame(int levelParam) {
+        labyrinth = new LabyrinthModel(this);
+        difficulty = LabyrinthModel.Difficulty.fromInt(levelParam);
+        labyrinth.create(10, 14, difficulty);
         labyrinthView.DrawLabyrinth(labyrinth, _displayMetrics.widthPixels, _displayMetrics.heightPixels);
 
-        settingsButton = findViewById(R.id.settingsButton);
-        settingsButton.setOnClickListener(view -> showSettingsDialog());
-
-        onSettingsButtonPressed(true);
+        registerAll();
     }
 
     private void showSettingsDialog() {
@@ -107,11 +125,16 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
+    private void showGameMenu() {
+        unregisterAll();
+        gameMenu.setCancelable(false);
+        gameMenu.show(getSupportFragmentManager(), null);
+    }
+
     private void registerAll() {
         fpsHandler.postDelayed(fpsRunnable, 1000 / 24);
-        labyrinth.registerEventListener(this);
         if(userControls == controls.ACCELERATOR) {
-            _sensorManager.registerListener(this, _accelerometer, SensorManager.SENSOR_DELAY_GAME);
+            _sensorManager.registerListener(GameActivity.this, _accelerometer, SensorManager.SENSOR_DELAY_GAME);
 
         } else {
             // TODO: subscribe MQTT
@@ -121,18 +144,26 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void unregisterAll() {
+        Log.d("GameActivity", "unregisterAll() called");
         fpsHandler.removeCallbacks(fpsRunnable);
-        labyrinth.removeEventListener(this);
 
         if(this.userControls == controls.ACCELERATOR) {
-            _sensorManager.unregisterListener(this);
-
+            try {
+                _sensorManager.unregisterListener(GameActivity.this);
+            } catch(ClassCastException ex) {
+                Log.d("GameActivity", ex.getMessage());
+            }
         } else {
             // TODO: unsubscribe MQTT
         }
     }
 
-
+private void getSettings() {
+    sharedPreferences = this.getSharedPreferences(getResources().getString(R.string.sharedPreferencesName), Context.MODE_PRIVATE);
+    vibratorUsed = sharedPreferences.getBoolean(getResources().getString(R.string.vibratorUsed), getResources().getBoolean(R.bool.vibratorUsedDefaultValue));
+    remoteUsed = sharedPreferences.getBoolean("Remote", false);
+    soundUsed = sharedPreferences.getBoolean(getResources().getString(R.string.soundUsed), getResources().getBoolean(R.bool.soundUsedDefaultValue));
+}
     @Override
     public void onNewMessage(String topicParam, String messageParam) {
 
@@ -180,20 +211,35 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
     /*
      * Labyrinth event handling
      */
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
-    public void OnGameWon() {
-        fpsHandler.removeCallbacks(fpsRunnable);
-        _sensorManager.unregisterListener(this);
-        labyrinth.removeEventListener(this);
+    public void onGameWon() {
+        Log.d("GameActivity", "Event onGameWon triggered!");
+        try {
+            unregisterAll();
+            sharedPreferences = this.getSharedPreferences(getResources().getString(R.string.sharedPreferencesName), Context.MODE_PRIVATE);
+            LocalDate _date = LocalDate.now();
+            CrazyLabyrinthDatabaseAccess database = new CrazyLabyrinthDatabaseAccess(this);
+            String _name = sharedPreferences.getString(getString(R.string.playerName), getString(R.string.playerNameDefaultValue));
+            String _dateString = String.format("%02d.%02d.%02d", _date.getDayOfMonth(), _date.getMonthValue(), _date.getYear() - 2000);
+            String _difficulty = difficulty.getString();
+            database.insertDataSet(new GameDataset(_name, time, _dateString, _difficulty));
+
+            GameWon _dialog = new GameWon(_name, time, _difficulty);
+            _dialog.setCancelable(false);
+            _dialog.show(getSupportFragmentManager(), null);
+
+        } catch(Exception ex) {
+            Log.d("GameActivity", ex.getMessage());
+        }
     }
 
     /**
      * Lets the phone vibrate when the wall is touched
      * @param param Speed of the ball during impact
      */
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
-    public void OnWallTouched(float param) {
+    public void onWallTouched(float param) {
 
         if (vibratorUsed) {
 
@@ -210,22 +256,86 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
             }
 
             if (_intensity > 0) {
-                VibrationEffect effect = VibrationEffect.createOneShot(100, _intensity);
-                this.vibrator.vibrate(effect);
+                VibrationEffect effect = null;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    effect = VibrationEffect.createOneShot(100, _intensity);
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    this.vibrator.vibrate(effect);
+                }
             }
         }
     }
 
     @Override
-    public void OnKeyCollected() {
+    public void onKeyCollected() {
         this.labyrinthView.RemoveKey();
     }
 
     @Override
     public void onSettingsButtonPressed(boolean settingsChanged) {
-        sharedPreferences = this.getSharedPreferences("CrazyLabyrinthSettings", Context.MODE_PRIVATE);
-        vibratorUsed = sharedPreferences.getBoolean("Vibrator", true);
-        remoteUsed = sharedPreferences.getBoolean("Remote", false);
-        soundUsed = sharedPreferences.getBoolean("Sound", true);
+
+
+
+        getSettings();
+
+        registerAll();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @Override
+    public void onGameMenuButtonPressed(String buttonParam) {
+
+        switch(buttonParam) {
+
+            case "RESUME":
+                registerAll();
+
+                break;
+        }
+    }
+
+    @Override
+    public void onGameWonButtonPressed(String buttonParam) {
+        switch(buttonParam) {
+
+            case "QUIT":
+                finish();
+
+                break;
+
+            case "NEW GAME":
+                NewGameMenu _dialog = new NewGameMenu();
+                _dialog.setCancelable(false);
+                _dialog.show(getSupportFragmentManager(), null);
+
+        }
+
+    }
+
+    @Override
+    public void onNewGameButtonPressed(String buttonParam) {
+
+        switch(buttonParam) {
+
+            case "EASY":
+                this.startGame(0);
+
+                break;
+
+            case "MEDIUM":
+                this.startGame(1);
+
+                break;
+
+            case "HARD":
+                this.startGame(2);
+
+                break;
+
+            case "BACK":
+                finish();
+
+        }
     }
 }

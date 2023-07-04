@@ -43,19 +43,18 @@ android:layout_marginTop="25dp"
 
     <com.GP.labyrinth.LabyrinthView
         android:id="@+id/labyrinth_view"
-        android:layout_above="@+id/settingsButton"
+        android:layout_above="@+id/menuButton"
         android:layout_below="@id/textLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="25dp"
-        android:layout_weight="1" />
+        android:layout_marginTop="25dp" />
 
     <Button
-        android:id="@+id/settingsButton"
+        android:id="@+id/menuButton"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:text="SETTINGS"
+        android:text="MENU"
         style="@style/ButtonStandardStyle"
         android:gravity="center"
         android:layout_marginBottom="25dp"

@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="sharedPreferences_name">CrazyLabyrinthPreferences</string>
-    <string name="playerfieldname">playername</string>
-    <string name="playerDefaultValue">PLAYER</string>
+    <string name="sharedPreferencesName">CrazyLabyrinthPreferences</string>
+    <string name="playerName">playername</string>
+    <string name="playerNameDefaultValue">PLAYER</string>
+    <string name="internetProtocolDefaultAddress">127.0.0.1</string>
+    <string name="internetProtocol">ip</string>
+    <bool name="vibratorUsedDefaultValue">true</bool>
+    <string name="vibratorUsed">vibrator</string>
+    <string name="soundUsed">sound</string>
+    <bool name="soundUsedDefaultValue">true</bool>
 </resources>
