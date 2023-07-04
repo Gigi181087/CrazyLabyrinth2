@@ -6,7 +6,11 @@ public class Vector2D {
     public float Length;
     public float Angle;
 
-
+    /**
+     * initializes start and end positions of the vectors
+     * @param startPositionsParam value of the starting positions
+     * @param endPositionParam value of end positions
+     */
     public Vector2D(Position2D startPositionsParam, Position2D endPositionParam) {
 
         this.StartPosition = startPositionsParam;
@@ -15,12 +19,18 @@ public class Vector2D {
         float deltaX = startPositionsParam.X - endPositionParam.X;
         float deltaY = startPositionsParam.Y - endPositionParam.Y;
 
-        // Setze die Werte der Vektorklasse
+        // Set the values of the vector class
         this.Length = (float) Math.sqrt(deltaX * deltaX + deltaY * deltaY);
         this.Angle = (float) Math.atan2(deltaY, deltaX);
 
     }
 
+    /**
+     * initializes length and angle of the vector
+     * @param startPositionParam value of the starting position
+     * @param angleParam value of the angle of the vector
+     * @param lengthParam value of the length of the vector
+     */
     public Vector2D(Position2D startPositionParam, float angleParam, float lengthParam) {
         this.StartPosition = startPositionParam;
         this.Length = lengthParam;
@@ -29,11 +39,21 @@ public class Vector2D {
         this.EndPosition = new Position2D(startPositionParam.X + lengthParam * (float) Math.cos(Math.toRadians(angleParam)), startPositionParam.Y + lengthParam * (float) Math.sin(Math.toRadians(angleParam)));
     }
 
+    /**
+     * creates vector
+     * @param vectorParam value of the vector
+     * @return actual vector
+     */
     public Vector2D resolveCollision(Vector2D vectorParam) {
 
         return new Vector2D(StartPosition, EndPosition);
     }
 
+    /**
+     *
+     * @param scalarParam
+     * @return
+     */
     public Vector2D multiplyScalar(float scalarParam) {
 
         return new Vector2D(StartPosition, new Position2D(EndPosition.X * scalarParam, EndPosition.Y * scalarParam));

@@ -41,6 +41,9 @@ public class SettingsMenu extends DialogFragment {
 
     private ListenerSettings listener;
 
+    /**
+     * state of the settings-button
+     */
     public interface ListenerSettings {
         void onSettingsButtonPressed(boolean settingsChangedParam);
     }
@@ -123,7 +126,7 @@ public class SettingsMenu extends DialogFragment {
         this.soundButton.setText(sharedPreferences.getBoolean(getResources().getString(R.string.soundUsed), getResources().getBoolean(R.bool.soundUsedDefaultValue)) ? getResources().getString(R.string.soundOn) : getResources().getString(R.string.soundOff));
         this.vibratorButton.setText(sharedPreferences.getBoolean(getResources().getString(R.string.vibratorUsed), getResources().getBoolean(R.bool.vibratorUsedDefaultValue)) ? getResources().getString(R.string.vibratorOn) : getResources().getString(R.string.vibratorOff));
 
-        /*this.ipText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        this.ipText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
                 if(!b) {
@@ -157,7 +160,7 @@ public class SettingsMenu extends DialogFragment {
                     }
                 }
             }
-        });*/
+        });
 
         this.soundButton.setOnClickListener(new View.OnClickListener() {
 

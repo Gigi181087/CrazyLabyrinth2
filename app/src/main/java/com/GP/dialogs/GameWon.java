@@ -38,10 +38,19 @@ public class GameWon extends DialogFragment {
     // listener
     private ListenerGameWonButtons listener;
 
+    /**
+     * Interface for Event-listeners
+     */
     public interface ListenerGameWonButtons {
         void onGameWonButtonPressed(String buttonPressed);
     }
 
+    /**
+     * constructor
+     * @param nameParam Playername
+     * @param timeParam time played
+     * @param levelParam level played
+     */
     public GameWon(String nameParam, int timeParam,  String levelParam) {
         name = nameParam;
         time = timeParam;
@@ -93,6 +102,10 @@ public class GameWon extends DialogFragment {
         return builder.create();
     }
 
+    /**
+     * destructor
+     * @param buttonParam Parameter for button status
+     */
     private void NotifyButtonPressed(String buttonParam) {
         listener.onGameWonButtonPressed(buttonParam);
     }

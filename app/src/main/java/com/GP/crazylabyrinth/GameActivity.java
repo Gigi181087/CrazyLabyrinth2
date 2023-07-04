@@ -50,6 +50,9 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
         }
     };
 
+    /**
+     * destructor for controlling inputs from esp32
+     */
     private enum controls {
         MQTT,
         ACCELERATOR
@@ -110,6 +113,10 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
         getSettings();
     }
 
+    /**
+     * Starts the game depending on the level of difficulty
+     * @param levelParam Difficulty parameters
+     */
     private void startGame(int levelParam) {
         labyrinth = new LabyrinthModel(this);
         difficulty = LabyrinthModel.Difficulty.fromInt(levelParam);
@@ -119,18 +126,27 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
         registerAll();
     }
 
+    /**
+     * shows the settings menu
+     */
     private void showSettingsDialog() {
         SettingsMenu _settingsDialog = new SettingsMenu();
         _settingsDialog.show(getSupportFragmentManager(), null);
 
     }
 
+    /**
+     * shows the game menu
+     */
     private void showGameMenu() {
         unregisterAll();
         gameMenu.setCancelable(false);
         gameMenu.show(getSupportFragmentManager(), null);
     }
 
+    /**
+     *
+     */
     private void registerAll() {
         fpsHandler.postDelayed(fpsRunnable, 1000 / 24);
         if(userControls == controls.ACCELERATOR) {
@@ -143,6 +159,9 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
+    /**
+     *
+     */
     private void unregisterAll() {
         Log.d("GameActivity", "unregisterAll() called");
         fpsHandler.removeCallbacks(fpsRunnable);
@@ -158,7 +177,10 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
-private void getSettings() {
+    /**
+     * sets default settings
+     */
+    private void getSettings() {
     sharedPreferences = this.getSharedPreferences(getResources().getString(R.string.sharedPreferencesName), Context.MODE_PRIVATE);
     vibratorUsed = sharedPreferences.getBoolean(getResources().getString(R.string.vibratorUsed), getResources().getBoolean(R.bool.vibratorUsedDefaultValue));
     remoteUsed = sharedPreferences.getBoolean("Remote", false);

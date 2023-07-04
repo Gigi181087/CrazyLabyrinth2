@@ -56,6 +56,11 @@ public class CrazyLabyrinthDatabaseAccess extends SQLiteOpenHelper {
         }
     }
 
+    /**
+     * sets the player's data
+     * @param dataSetParam parameter for the player's data
+     * @return player's data
+     */
     public long insertDataSet(GameDataset dataSetParam) {
         ContentValues _data = new ContentValues();
 
@@ -67,6 +72,11 @@ public class CrazyLabyrinthDatabaseAccess extends SQLiteOpenHelper {
         return database.insert("playerdata", null, _data);
     }
 
+    /**
+     * filters the data
+     * @param levelParam value for the difficulty of the level
+     * @return
+     */
     public Cursor getFilteredData(String levelParam) {
         String[] _columns = new String[] {"name", "date", "time"};
 
@@ -74,6 +84,9 @@ public class CrazyLabyrinthDatabaseAccess extends SQLiteOpenHelper {
 
     }
 
+    /**
+     *
+     */
     public void debugPrintTable() {
         SQLiteDatabase db = getReadableDatabase();
 
@@ -88,7 +101,7 @@ public class CrazyLabyrinthDatabaseAccess extends SQLiteOpenHelper {
                 long zeit = cursor.getLong(cursor.getColumnIndexOrThrow("time"));
                 String schwierigkeit = cursor.getString(cursor.getColumnIndexOrThrow("level"));
 
-                // Ausgabe in der Konsole oder im Logcat
+                // Output in the console or in the logcat
                 Log.d("DEBUG", "Name: " + name + ", Datum: " + datum + ", Zeit: " + zeit + ", Schwierigkeit: " + schwierigkeit);
             } while (cursor.moveToNext());
         }

@@ -18,6 +18,9 @@ public class GameMenu extends DialogFragment {
 
     private ListenerGameMenuButton listener;
 
+    /**
+     * state of the game-menu-button
+     */
     public interface ListenerGameMenuButton {
         public void onGameMenuButtonPressed(String buttonParam);
     }

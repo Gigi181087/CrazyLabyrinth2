@@ -17,6 +17,13 @@ public class GameDataset {
         this.Id = -1;
     }
 
+    /**
+     * contains data of the game
+     * @param alias
+     * @param time
+     * @param date
+     * @param levelParam value for the difficulty of the level
+     */
     public GameDataset(String alias, int time, String date, String levelParam) {
         this.Alias = alias;
         this.Date = date;

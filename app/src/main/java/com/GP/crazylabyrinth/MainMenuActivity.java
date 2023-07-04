@@ -38,11 +38,17 @@ public class MainMenuActivity extends AppCompatActivity implements NewGameMenu.l
         this.openDialogStartMenu();
     }
 
+    /**
+     *
+     */
     private void openDialogStartMenu() {
         this.dialogStart = new StartMenu();
         this.dialogStart.show(getSupportFragmentManager(), null);
     }
 
+    /**
+     *
+     */
     private void openDialogNewGame() {
         this.dialogNewGame = new NewGameMenu();
         this.dialogNewGame.show(getSupportFragmentManager(), null);
@@ -54,16 +60,26 @@ public class MainMenuActivity extends AppCompatActivity implements NewGameMenu.l
         this.openDialogStartMenu();
     }
 
+    /**
+     * opens the settings menue
+     */
     private void openDialogSettings() {
         this.dialogSettings = new SettingsMenu();
         this.dialogSettings.show(getSupportFragmentManager(), null);
     }
 
+    /**
+     * opens the high score board
+     */
     private void openDialogHighscore() {
         this.dialogHighscore = new Highscore();
         this.dialogHighscore.show(getSupportFragmentManager(), null);
     }
 
+    /**
+     * destructor
+     * @param levelParam parameter for the difficulty of the level
+     */
     private void startGame(int levelParam) {
         Intent _intent = new Intent(this, GameActivity.class);
         Bundle _bundle = new Bundle();

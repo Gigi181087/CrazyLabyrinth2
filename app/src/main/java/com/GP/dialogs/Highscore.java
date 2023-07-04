@@ -33,6 +33,9 @@ public class Highscore extends DialogFragment {
 
     private listenerHighscoreButtons listener;
 
+    /**
+     * state of the highscore-button
+     */
     public interface listenerHighscoreButtons {
         void onHighscoreButtonPressed(String buttonPressedParam);
     }
@@ -73,6 +76,10 @@ public class Highscore extends DialogFragment {
         return builder.create();
     }
 
+    /**
+     * sets the difficulty based on the levelParam
+     * @param levelParam value for difficulty of the level
+     */
     private void populateList(int levelParam) {
         String _filter;
         linearLayoutStats.removeAllViews();
@@ -118,6 +125,10 @@ public class Highscore extends DialogFragment {
         }
     }
 
+    /**
+     * constructor
+     * @param buttonPressedParam state of the Highscore-button
+     */
     public void buttonPressed(String buttonPressedParam) {
         listener.onHighscoreButtonPressed(buttonPressedParam);
 

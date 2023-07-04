@@ -23,6 +23,9 @@ public class StartMenu extends DialogFragment {
 
     private listenerStartMenuButtons listener;
 
+    /**
+     * state of the start-menu-button
+     */
     public interface listenerStartMenuButtons {
         void onStartMenuButtonPressed(String buttonPressedParam);
     }
@@ -64,6 +67,10 @@ public class StartMenu extends DialogFragment {
         return builder.create();
     }
 
+    /**
+     * destructor
+     * @param buttonPressedParam state of the star-menu-button
+     */
     private void goBack(String buttonPressedParam) {
         listener.onStartMenuButtonPressed(buttonPressedParam);
 

@@ -26,6 +26,9 @@ public class NewGameMenu extends DialogFragment {
 
     private listenerNewGameButtons listener;
 
+    /**
+     * state of the new-game-button
+     */
     public interface listenerNewGameButtons {
         void onNewGameButtonPressed(String buttonPressedParam);
     }
@@ -66,6 +69,10 @@ public class NewGameMenu extends DialogFragment {
         return builder.create();
     }
 
+    /**
+     * constructor
+     * @param buttonPressedParam state of the new-game-button
+     */
     public void notifyButtonPressed(String buttonPressedParam) {
         listener.onNewGameButtonPressed(buttonPressedParam);
 
