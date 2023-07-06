@@ -46,6 +46,7 @@ public class SettingsMenu extends DialogFragment {
      */
     public interface ListenerSettings {
         void onSettingsButtonPressed(boolean settingsChangedParam);
+        void onButtonConnectPressed();
     }
 
     @Override
@@ -83,7 +84,7 @@ public class SettingsMenu extends DialogFragment {
         vibrator = this.sharedPreferences.getBoolean(getResources().getString(R.string.vibratorUsed), getResources().getBoolean(R.bool.vibratorUsedDefaultValue));
         sound = this.sharedPreferences.getBoolean(getResources().getString(R.string.soundUsed), getResources().getBoolean(R.bool.soundUsedDefaultValue));
 
-        connectButton.setOnClickListener(_lambdaView -> MQTTManager.connect(ip));
+        connectButton.setOnClickListener(_lambdaView -> listener.onButtonConnectPressed());
 
         this.playerText.setText(playerName);
         this.ipText.setText(ip);

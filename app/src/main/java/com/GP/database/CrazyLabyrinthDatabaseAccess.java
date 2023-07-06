@@ -2,8 +2,6 @@
 
 package com.GP.database;
 
-import java.util.StringTokenizer;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -21,9 +19,6 @@ public class CrazyLabyrinthDatabaseAccess extends SQLiteOpenHelper {
     /**
      * Constructor
      * @param activity: aufrufende Activity
-     * @param databaseName: Name der Datenbank (wenn nicht vorhanden, dann wird sie neu erstellt)
-     * @param tableSQL: SQL-Kommando zum Erzeugen der gew?nschten Tabelle (oder null bei ?ffnen
-     *                      einer vorhandenen Datenbank)
      */
     public CrazyLabyrinthDatabaseAccess(Context activity) {
         super(activity, activity.getString(R.string.database_name), null, 1);

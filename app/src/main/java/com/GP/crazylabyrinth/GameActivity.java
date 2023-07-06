@@ -12,6 +12,8 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -21,6 +23,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.GP.database.CrazyLabyrinthDatabaseAccess;
 import com.GP.database.GameDataset;
@@ -31,14 +34,19 @@ import com.GP.dialogs.SettingsMenu;
 import com.GP.labyrinth.LabyrinthModel;
 import com.GP.labyrinth.LabyrinthView;
 import com.GP.mqtt.MQTTManager;
+import com.GP.remote.Remote;
 
 import java.time.LocalDate;
 
-public class GameActivity extends AppCompatActivity implements SensorEventListener, LabyrinthModel.LabyrinthListener, MQTTManager.MQTTEventListener, SettingsMenu.ListenerSettings, GameMenu.ListenerGameMenuButton, GameWon.ListenerGameWonButtons, NewGameMenu.listenerNewGameButtons {
+public class GameActivity extends AppCompatActivity implements SensorEventListener, LabyrinthModel.LabyrinthListener, SettingsMenu.ListenerSettings, GameMenu.ListenerGameMenuButton, GameWon.ListenerGameWonButtons, NewGameMenu.listenerNewGameButtons, Remote.ListenerRemoteEvents {
     private SharedPreferences sharedPreferences;
     private volatile boolean vibratorUsed;
     private boolean remoteUsed;
     private boolean soundUsed;
+    private TextView tempView;
+    private TextView timeView;
+
+    private MediaPlayer mediaPlayer;
 
     private Button settingsButton;
     private Handler fpsHandler = new Handler();
@@ -53,13 +61,13 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
     /**
      * destructor for controlling inputs from esp32
      */
-    private enum controls {
+    private enum Controls {
         MQTT,
         ACCELERATOR
     }
 
     int time = 0;
-    private controls userControls;
+    private Controls userControls;
 
     //private final Display display;
     private LabyrinthModel labyrinth;
@@ -81,6 +89,8 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
     protected void onCreate(Bundle savedInstanceStateParam) {
         super.onCreate(savedInstanceStateParam);
 
+        Remote.initialize(getApplicationContext());
+
         // Force display to not rotate and disable ugly action bar
         this.vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -97,17 +107,20 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
         _accelerometer = _sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
 
+        mediaPlayer = MediaPlayer.create(this, android.provider.Settings.System.DEFAULT_NOTIFICATION_URI);
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
-        // Initialize Labyrinth
 
-        // Handle activity view
+        Remote.getInstance().registerListener(this);
+
 
         gameMenu = new GameMenu();
-
+        tempView = findViewById(R.id.tempView);
+        timeView = findViewById(R.id.timeView);
         menuButton = (Button)findViewById(R.id.menuButton);
         menuButton.setOnClickListener(view -> showGameMenu());
 
-        this.userControls = controls.ACCELERATOR;
+        this.userControls = Controls.ACCELERATOR;
 
         startGame(getIntent().getIntExtra("level", 2));
         getSettings();
@@ -149,14 +162,10 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
      */
     private void registerAll() {
         fpsHandler.postDelayed(fpsRunnable, 1000 / 24);
-        if(userControls == controls.ACCELERATOR) {
+        if(userControls == Controls.ACCELERATOR) {
             _sensorManager.registerListener(GameActivity.this, _accelerometer, SensorManager.SENSOR_DELAY_GAME);
 
-        } else {
-            // TODO: subscribe MQTT
-
         }
-
     }
 
     /**
@@ -166,14 +175,12 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
         Log.d("GameActivity", "unregisterAll() called");
         fpsHandler.removeCallbacks(fpsRunnable);
 
-        if(this.userControls == controls.ACCELERATOR) {
+        if(this.userControls == Controls.ACCELERATOR) {
             try {
                 _sensorManager.unregisterListener(GameActivity.this);
             } catch(ClassCastException ex) {
                 Log.d("GameActivity", ex.getMessage());
             }
-        } else {
-            // TODO: unsubscribe MQTT
         }
     }
 
@@ -186,10 +193,7 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
     remoteUsed = sharedPreferences.getBoolean("Remote", false);
     soundUsed = sharedPreferences.getBoolean(getResources().getString(R.string.soundUsed), getResources().getBoolean(R.bool.soundUsedDefaultValue));
 }
-    @Override
-    public void onNewMessage(String topicParam, String messageParam) {
 
-    }
 
     private void subscribeMQTT() {
 
@@ -204,6 +208,10 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        if(mediaPlayer != null) {
+            mediaPlayer.release();
+        }
         this.unregisterAll();
     }
 
@@ -246,6 +254,8 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
             String _dateString = String.format("%02d.%02d.%02d", _date.getDayOfMonth(), _date.getMonthValue(), _date.getYear() - 2000);
             String _difficulty = difficulty.getString();
             database.insertDataSet(new GameDataset(_name, time, _dateString, _difficulty));
+            mediaPlayer.start();
+            Remote.getInstance().sendGameWonMessage();
 
             GameWon _dialog = new GameWon(_name, time, _difficulty);
             _dialog.setCancelable(false);
@@ -296,12 +306,14 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public void onSettingsButtonPressed(boolean settingsChanged) {
-
-
-
         getSettings();
-
         registerAll();
+    }
+
+    @Override
+    public void onButtonConnectPressed() {
+        String _ip = sharedPreferences.getString(getResources().getString(R.string.internetProtocol), getResources().getString(R.string.internetProtocolDefaultAddress));
+        Remote.getInstance().connectToBroker(_ip);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -358,6 +370,24 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
             case "BACK":
                 finish();
 
+        }
+    }
+
+    @Override
+    public void onTimeMessage(int millisecondsParam) {
+        this.timeView.setText(String.format("%02d:%02d.%03d", millisecondsParam / 60000, millisecondsParam % 60000 / 1000, millisecondsParam % 1000));
+    }
+
+    @Override
+    public void onTempMessage(float tempParam) {
+        this.tempView.setText(String.format("%.1f", tempParam));
+    }
+
+    @Override
+    public void onSensorMessage(float[] forceParams) {
+
+        if(userControls == Controls.MQTT) {
+            labyrinth.updateBallPosition(-forceParams[0], forceParams[1]);
         }
     }
 }

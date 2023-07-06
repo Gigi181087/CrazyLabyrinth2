@@ -20,10 +20,7 @@ import com.GP.labyrinth.LabyrinthModel;
 public class LabyrinthView extends View {
     private Bitmap _labyrinthBitmap;
     private Bitmap keyBitmap;
-    private Bitmap ballBitmap;
     private Bitmap shadowBitmap;
-    private Bitmap cover;
-    private Bitmap _ballBitmap;
     private float scaleFactor;
     private LabyrinthModel labyrinth;
     /**

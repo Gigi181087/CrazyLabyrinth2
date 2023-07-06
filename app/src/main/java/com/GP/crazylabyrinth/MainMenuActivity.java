@@ -3,6 +3,7 @@ package com.GP.crazylabyrinth;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import com.GP.dialogs.Highscore;
@@ -10,11 +11,13 @@ import com.GP.dialogs.NewGameMenu;
 import com.GP.dialogs.SettingsMenu;
 import com.GP.dialogs.StartMenu;
 import com.GP.mqtt.MQTTManager;
+import com.GP.remote.Remote;
 
 import java.io.File;
 
 public class MainMenuActivity extends AppCompatActivity implements NewGameMenu.listenerNewGameButtons, StartMenu.listenerStartMenuButtons, SettingsMenu.ListenerSettings, Highscore.listenerHighscoreButtons {
-// TODO: draw background labyrinth
+
+    SharedPreferences sharedPreferences;
     private StartMenu dialogStart;
     private NewGameMenu dialogNewGame;
     private SettingsMenu dialogSettings;
@@ -32,9 +35,11 @@ public class MainMenuActivity extends AppCompatActivity implements NewGameMenu.l
         File dbFile = this.getDatabasePath(this.getString(R.string.database_name));
         String _sqlCommand = null;
 
-        // Initialize the MQTT Manager
-        MQTTManager.initialize(getApplicationContext());
+        // Initialize the Remote
+        Remote.initialize(getApplicationContext());
 
+        // Initialize shared Preferences
+        sharedPreferences = getSharedPreferences(getResources().getString(R.string.sharedPreferencesName), MODE_PRIVATE);
         this.openDialogStartMenu();
     }
 
@@ -87,6 +92,13 @@ public class MainMenuActivity extends AppCompatActivity implements NewGameMenu.l
         _bundle.putInt("level", levelParam);
         _intent.putExtras(_bundle);
         startActivity(_intent);
+    }
+
+    @Override
+    public void onButtonConnectPressed(){
+        //String _ip = sharedPreferences.getString(getResources().getString(R.string.internetProtocol), getResources().getString(R.string.internetProtocolDefaultAddress));
+        String _ip = "broker.hivemq.com";
+        Remote.getInstance().connectToBroker(_ip);
     }
 
     @Override
@@ -146,6 +158,8 @@ public class MainMenuActivity extends AppCompatActivity implements NewGameMenu.l
 
         }
     }
+
+
 
     @Override
     public void onHighscoreButtonPressed(String buttonPressedParam) {
