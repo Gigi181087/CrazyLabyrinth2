@@ -8,7 +8,117 @@ import java.util.EventListener;
 import java.util.List;
 import com.GP.mqtt.MQTTManager;
 
+import org.eclipse.paho.android.service.MqttAndroidClient;
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+
 public class Remote implements MQTTManager.MQTTEventListener {
+
+    private static Remote instance;
+    private MqttAndroidClient mqttAndroidClient;
+    private String clientId = "your_client_id";
+    private Context context;
+
+    private String serverUri;
+
+    private Remote(Context context) {
+        if (uniqueInstance != null) {
+            throw new RuntimeException("Use getInstance() method to get the single instance of this class.");
+        }
+        this.context = context.getApplicationContext();
+    }
+
+    public static synchronized Remote getInstance(Context context) {
+        if (instance == null) {
+            instance = new Remote(context);
+        }
+        return instance;
+    }
+
+    public void connect(String brokerIp) {
+        serverUri = "tcp://" + brokerIp + ":1883";
+        MqttConnectOptions options = new MqttConnectOptions();
+
+        try {
+            mqttAndroidClient = new MqttAndroidClient(context, serverUri, clientId);
+            mqttAndroidClient.setCallback(new MqttCallback() {
+                @Override
+                public void connectionLost(Throwable cause) {
+                    // Verarbeitung von Verbindungsverlusten
+                    if (cause != null) {
+                        cause.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void messageArrived(String topic, MqttMessage message) throws Exception {
+                    onMessage(topic, message.getPayload().toString());
+                }
+
+                @Override
+                public void deliveryComplete(IMqttDeliveryToken token) {
+                        String messageId = String.valueOf(token.getMessageId());
+                        Log.d("Remote", "Nachricht zugestellt - ID: " + messageId);
+                        // Weitere Verarbeitung der zugestellten Nachricht...
+
+                }
+            });
+
+            IMqttToken token = mqttAndroidClient.connect(options);
+            token.setActionCallback(new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    // Verarbeitung bei Verbindungsfehler
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public void subscribeToTopic(String topic) {
+        try {
+            IMqttToken token = mqttAndroidClient.subscribe(topic, 0);
+            token.setActionCallback(new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    // Verarbeitung bei erfolgreichem Abonnement
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    // Verarbeitung bei Abonnementfehler
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void publishMessage(String topic, String message) {
+        try {
+            MqttMessage mqttMessage = new MqttMessage();
+            mqttMessage.setPayload(message.getBytes());
+            mqttAndroidClient.publish(topic, mqttMessage);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+
     private static Remote uniqueInstance;
 
     private static List<ListenerRemoteEvents> listeners;
@@ -33,16 +143,6 @@ public class Remote implements MQTTManager.MQTTEventListener {
         CONNECTED
     }
 
-    /**
-     * Constructor
-     * @param context application context
-     */
-    private Remote(Context context) {
-        // Prevent from the reflection api.
-        if (uniqueInstance != null) {
-            throw new RuntimeException("Use getInstance() method to get the single instance of this class.");
-        }
-    }
 
     /**
      * Gives the unique instance of the remote
@@ -72,7 +172,6 @@ public class Remote implements MQTTManager.MQTTEventListener {
 
         } else if (uniqueInstance == null) {
             uniqueInstance = new Remote(applicationContext);
-            uniqueInstance.mqttConnection = new MQTTManager(getInstance(), "test");
             listeners = new ArrayList<>();
 
         } else {
@@ -81,23 +180,22 @@ public class Remote implements MQTTManager.MQTTEventListener {
     }
 
     public void connectToBroker(String brokerParam) {
-        this.mqttConnection.connect(brokerParam);
-        this.mqttConnection.subscribe("mpu/I12");
-        this.mqttConnection.subscribe("temp/I12");
-        this.mqttConnection.subscribe("time/I12");
+        connect(brokerParam);
+        subscribeToTopic("mpu/I12");
+        subscribeToTopic("temp/I12");
+        subscribeToTopic("time/I12");
     }
 
     public void sendGameWonMessage() {
         Log.d("Remote", "Sending game won message to broker");
-        this.mqttConnection.publish("Crazy/I12", "Game won");
+        uniqueInstance.publishMessage("Crazy/I12", "Game won");
     }
 
     public void sendGameStartMessage() {
         Log.d("Remote", "Sending game won message to broker");
-        this.mqttConnection.publish("Crazy/I12", "Game start");
+        uniqueInstance.publishMessage("Crazy/I12", "Game start");
     }
 
-    @Override
     public void onMessage(String topicParam, String messageParam) {
 
         try {
